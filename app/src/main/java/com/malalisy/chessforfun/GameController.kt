@@ -7,7 +7,7 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
     val rulesManager: RulesManager = RulesManager(board)
 
 
-    public fun move(x: Int, y: Int, x2: Int, y2: Int): Move? {
+    fun move(x: Int, y: Int, x2: Int, y2: Int): Move? {
         if (board[y][x] == null) {
             return null
         }
