@@ -3,7 +3,8 @@ package com.malalisy.chessforfun.chess_engine
 import com.malalisy.chessforfun.Color
 import com.malalisy.chessforfun.Move
 import com.malalisy.chessforfun.pieces.*
-import com.malalisy.chessforfun.validPosition
+import com.malalisy.chessforfun.utils.isValidCastlingMove
+import com.malalisy.chessforfun.utils.validPosition
 import java.util.ArrayList
 
 class SuccessorFunction() {
@@ -46,22 +47,27 @@ class SuccessorFunction() {
         if ((piece as King).isFirstMove) {
             if (piece.color == Color.WHITE) {
                 // Right castling
-                if (board[0][5] == null && board[0][6] == null && board[0][7] != null && board[0][7] is Rook && (board[0][7] as Rook).isFirstMove) {
-                    list.add(Move(x, y, 6, 0, piece))
-                }
+                var castling = Move(x, y, 6, 0, piece)
+                if (isValidCastlingMove(board, castling))
+                    list.add(castling)
+
                 // Left Castling
-                if (board[0][1] == null && board[0][2] == null && board[0][3] == null && board[0][0] != null && board[0][0] is Rook && (board[0][0] as Rook).isFirstMove) {
-                    list.add(Move(x, y, 2, 0, piece))
-                }
+                castling = Move(x, y, 2, 0, piece)
+                if (isValidCastlingMove(board, castling))
+                    list.add(castling)
+
+
             } else {
-                // Right Castling
-                if (board[7][1] == null && board[7][2] == null && board[7][3] == null && board[7][0] != null && board[7][0] is Rook && (board[7][0] as Rook).isFirstMove) {
-                    list.add(Move(x, y, 2, 7, piece))
-                }
+
+                // Right castling
+                var castling = Move(x, y, 2, 7, piece)
+                if (isValidCastlingMove(board, castling))
+                    list.add(castling)
+
                 // Left Castling
-                if (board[7][5] == null && board[7][6] == null && board[7][7] != null && board[7][7] is Rook && (board[7][7] as Rook).isFirstMove) {
-                    list.add(Move(x, y, 6, 7, piece))
-                }
+                castling = Move(x, y, 6, 7, piece)
+                if (isValidCastlingMove(board, castling))
+                    list.add(castling)
             }
         }
         return list

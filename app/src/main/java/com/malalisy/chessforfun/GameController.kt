@@ -1,6 +1,7 @@
 package com.malalisy.chessforfun
 
 import com.malalisy.chessforfun.pieces.*
+import com.malalisy.chessforfun.utils.movePiece
 import kotlin.math.abs
 
 class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
@@ -45,24 +46,24 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
             processNormalMove(m)
         } else {
             // Castling Move
-            movePiece(m.x1, m.y1, m.x2, m.y2)
+            movePiece(board, m.x1, m.y1, m.x2, m.y2)
 
             // Move The Rook
             if (m.piece.color == Color.WHITE) {
                 if (m.x2 == 6 && m.y2 == 0) {
                     // Castling with the right rook
-                    movePiece(7, 0, 5, 0)
+                    movePiece(board,7, 0, 5, 0)
                 } else if (m.x2 == 2 && m.y2 == 0) {
                     // Castling with the left rook
-                    movePiece(0, 0, 3, 0)
+                    movePiece(board,0, 0, 3, 0)
                 }
             } else {
                 if (m.x2 == 6 && m.y2 == 7) {
                     // Castling with the left (From black perspective) rook
-                    movePiece(7, 7, 5, 7)
+                    movePiece(board, 7, 7, 5, 7)
                 } else if (m.x2 == 2 && m.y2 == 7) {
                     // Castling with the right (From black perspective) rook
-                    movePiece(0, 7, 3, 7)
+                    movePiece(board, 0, 7, 3, 7)
                 }
             }
 
@@ -103,13 +104,8 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
         if (board[move.y2][move.x2] != null) {
             /* TODO Return the captured piece! */
         }
-
-        movePiece(move.x1, move.y1, move.x2, move.y2)
+        movePiece(board, move.x1, move.y1, move.x2, move.y2)
     }
 
 
-    private fun movePiece(x1: Int, y1: Int, x2: Int, y2: Int) {
-        board[y2][x2] = board[y1][x1]
-        board[y1][x1] = null
-    }
 }

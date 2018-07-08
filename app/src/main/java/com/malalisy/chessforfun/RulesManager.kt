@@ -1,6 +1,7 @@
 package com.malalisy.chessforfun
 
 import com.malalisy.chessforfun.pieces.*
+import com.malalisy.chessforfun.utils.*
 import kotlin.math.abs
 
 class RulesManager(val board: Array<Array<Piece?>>) {
@@ -36,40 +37,8 @@ class RulesManager(val board: Array<Array<Piece?>>) {
             return false
         } else {
             // Check if it is a castling move
-            if (m.piece.color == Color.WHITE) {
-                return if (m.x2 == 6 && m.y2 == 0) {
-                    // Castling with the right rook
-
-                    // Check if the right rook also has not moved
-                    board[0][7] != null && board[0][7] is Rook && (board[0][7] as Rook).isFirstMove
-                } else if (m.x2 == 2 && m.y2 == 0) {
-                    // Castling with the left rook
-
-                    // Check if the left rook also has not moved
-                    board[0][0] != null && board[0][0] is Rook && (board[0][0] as Rook).isFirstMove
-                } else {
-                    // Not a castling move either
-                    false
-                }
-            } else {
-                return if (m.x2 == 6 && m.y2 == 7) {
-                    // Castling with the left (From black perspective) rook
-
-                    // Check if the right rook also has not moved
-                    board[7][7] != null && board[7][7] is Rook && (board[7][7] as Rook).isFirstMove
-                } else if (m.x2 == 2 && m.y2 == 7) {
-                    // Castling with the right (From black perspective) rook
-
-                    // Check if the left rook also has not moved
-                    board[7][0] != null && board[7][0] is Rook && (board[7][0] as Rook).isFirstMove
-                } else {
-                    // Not a castling move either
-                    false
-                }
-            }
+            return isValidCastlingMove(board, m)
         }
-
-
     }
 
     private fun validateDiagonalMove(m: Move): Boolean {
@@ -81,7 +50,7 @@ class RulesManager(val board: Array<Array<Piece?>>) {
         // Get the dir of moving
         val xDir = (m.x2 - m.x1) / abs(m.x2 - m.x1)
         val yDir = (m.y2 - m.y1) / abs(m.y2 - m.y1)
-        if (getNearestPieceUntil(m.x1, m.y1, m.x2, m.y2, xDir, yDir) != null) {
+        if (getNearestPieceUntil(board, m.x1, m.y1, m.x2, m.y2, xDir, yDir) != null) {
             // There is a piece blocking the way!
             return false
         }
@@ -107,7 +76,7 @@ class RulesManager(val board: Array<Array<Piece?>>) {
         else
             yDir = (m.y2 - m.y1) / abs(m.y2 - m.y1)
 
-        if (getNearestPieceUntil(m.x1, m.y1, m.x2, m.y2, xDir, yDir) != null)
+        if (getNearestPieceUntil(board, m.x1, m.y1, m.x2, m.y2, xDir, yDir) != null)
             return false
 
         return true
@@ -130,7 +99,7 @@ class RulesManager(val board: Array<Array<Piece?>>) {
         nBoard[move.y2][move.x2] = board[move.y1][move.x1]
         nBoard[move.y1][move.x1] = null
 
-        return isKingThreaten(nBoard, move.piece.color)
+        return isKingInCheck(nBoard, move.piece.color)
     }
 
     private fun validatePawnMove(m: Move, lastMove: Move?): Boolean {
@@ -171,136 +140,6 @@ class RulesManager(val board: Array<Array<Piece?>>) {
         }
 
         return false
-    }
-
-    fun isKingThreaten(board: Array<Array<Piece?>>, color: Color): Boolean {
-        // Get the king's position
-        var x = 0
-        var y = 0
-
-        for (i in 0..7) {
-            for (j in 0..7) {
-                if (board[i][j] != null && board[i][j] is King && board[i][j]?.color == color) {
-                    x = i
-                    y = j
-                    break
-                }
-            }
-        }
-
-        // Check for pawn threatening
-        if (color == Color.WHITE) {
-            if (validPosition(x + 1, y + 1)) {
-                val rightDiagonal = board[y + 1][x + 1]
-                if (rightDiagonal != null && rightDiagonal is Pawn && rightDiagonal.color != color) {
-                    return true
-                }
-            }
-            if (validPosition(x - 1, y + 1)) {
-                val leftDiagonal = board[y - 1][x + 1]
-                if (leftDiagonal != null && leftDiagonal is Pawn && leftDiagonal.color != color) {
-                    return true
-                }
-            }
-        } else {
-            if (validPosition(x + 1, y - 1)) {
-                val rightDiagonal = board[y + 1][x - 1]
-                if (rightDiagonal != null && rightDiagonal is Pawn && rightDiagonal.color != color) {
-                    return true
-                }
-            }
-            if (validPosition(x - 1, y - 1)) {
-                val leftDiagonal = board[y - 1][x - 1]
-                if (leftDiagonal != null && leftDiagonal is Pawn && leftDiagonal.color != color) {
-                    return true
-                }
-            }
-        }
-
-
-
-        // Check for knight threatening
-        val xKDirArray = intArrayOf(-2, -2, 2, 2, -1, 1, -1, 1)
-        val yKDirArray = intArrayOf(-1, 1, -1, 1, -2, -2, 2, 2)
-        for (i in 0 until xKDirArray.size) {
-
-            if (knightThreatening(x + xKDirArray[i], y + yKDirArray[i], color))
-                return true
-
-        }
-
-
-
-        // Check for horizontal
-        val xDirArray = intArrayOf(0, 0, 1, -1)
-        val yDirArray = intArrayOf(1, -1, 0, 0)
-
-        for (i in 0 until xDirArray.size) {
-            var horiPiece = getNearestPiece(x, y, xDirArray[i], yDirArray[i])
-
-            if (horiPiece != null) {
-                // There is a piece, check if it is queen or rook of the opponent
-                // If so, the king is under threat
-                // If not, there is a piece of other types, king is safe even if there is
-                // rook or queen behind this piece, so stop
-                if (horiPiece.color != color && (horiPiece is Queen || horiPiece is Rook))
-                    return true
-            }
-
-        }
-
-        // Check for diagonal threatening
-        val xBDirArray = intArrayOf(1, 1, -1, -1)
-        val yBDirArray = intArrayOf(-1, 1, -1, 1)
-
-        for (i in 0 until xBDirArray.size) {
-            val nearestDiagonalPiece = getNearestPiece(x, y, xBDirArray[i], yBDirArray[i])
-            if (nearestDiagonalPiece != null) {
-                // There is a piece, check if it is bishop of the opponent
-                // If so, the king is under threat
-                // If not, there is a piece of other types, king is safe even if there is
-                // bishop or queen behind this piece, so stop
-                if (nearestDiagonalPiece.color != color && (nearestDiagonalPiece is Bishop || nearestDiagonalPiece is Queen))
-                    return true
-            }
-        }
-
-        return false
-    }
-
-    // Check if there is knight on this position
-    private fun knightThreatening(x: Int, y: Int, color: Color) = validPosition(x, y) && board[y][x] != null && board[y][x] is Knight && board[y][x]?.color != color
-
-
-    private fun getNearestPiece(x: Int, y: Int, horizontalIncrement: Int, verticalIncrement: Int): Piece? {
-        var i = x
-        var j = y
-        do {
-            i += horizontalIncrement
-            j += verticalIncrement
-
-            if (!validPosition(i, j))
-                return null
-
-            if (board[j][i] != null)
-                return board[j][i]
-        } while (true)
-    }
-
-
-    private fun getNearestPieceUntil(x1: Int, y1: Int, x2: Int, y2: Int, horizontalIncrement: Int, verticalIncrement: Int): Piece? {
-        var i = x1
-        var j = y1
-        do {
-            i += horizontalIncrement
-            j += verticalIncrement
-
-            if (i == x2 && j == y2)
-                return null
-
-            if (board[j][i] != null)
-                return board[j][i]
-        } while (true)
     }
 
 
