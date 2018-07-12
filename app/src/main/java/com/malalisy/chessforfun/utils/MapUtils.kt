@@ -4,7 +4,7 @@ import com.malalisy.chessforfun.Color
 import com.malalisy.chessforfun.pieces.*
 
 
-fun getBoardFromMap(map: String): Array<Array<Piece?>> {
+fun boardFromMap(map: String): Array<Array<Piece?>> {
     val board = Array<Array<Piece?>>(8, {
         Array<Piece?>(8, {
             null
@@ -57,7 +57,7 @@ fun getInitialMap(): String {
             "RBF-NB-BB-QB-KBF-BB-NB-RBF-"
 }
 
-fun getInitialBoard(): Array<Array<Piece?>> = getBoardFromMap(getInitialMap())
+fun getInitialBoard(): Array<Array<Piece?>> = boardFromMap(getInitialMap())
 
 fun boardToMap(board: Array<Array<Piece?>>): String {
     var map = ""
@@ -97,4 +97,19 @@ fun boardToMap(board: Array<Array<Piece?>>): String {
 
     return map
 
+}
+
+
+fun printBoard(board: Array<Array<Piece?>>) {
+    for (i in 0..7) {
+        for (j in 0..7) {
+            if (board[i][j] != null)
+                print(board[i][j])
+            else
+                print(".")
+            print("\t")
+        }
+
+        println()
+    }
 }

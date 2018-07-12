@@ -1,27 +1,24 @@
 package com.malalisy.chessforfun
 
 import com.malalisy.chessforfun.pieces.*
+import com.malalisy.chessforfun.utils.isLegalMove
 import com.malalisy.chessforfun.utils.movePiece
 import kotlin.math.abs
 
 class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
-    val rulesManager: RulesManager = RulesManager(board)
 
-
-    fun move(x: Int, y: Int, x2: Int, y2: Int): Move? {
-        if (board[y][x] == null) {
+    fun move(p1: Point, p2: Point): Move? {
+        if (board[p1.y][p1.x] == null) {
             return null
         }
 
-        val move = Move(x, y, x2, y2, board[y][x]!!)
+        val move = Move(p1, p2, board[p1.y][p1.x]!!)
 
-        if (rulesManager.isLegalMove(move, lastMove)) {
+        if (isLegalMove(board, move, lastMove)) {
             return null
         }
-        if (board[y][x] == null)
-            return null
 
-        when (board[y][x]) {
+        when (board[p1.y][p1.x]) {
 
             is Pawn -> {
                 processPawnMove(move)
@@ -39,31 +36,31 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
     }
 
     private fun processKingMove(m: Move) {
-        val temp = abs(m.x1 - m.x2)
-        val temp2 = abs(m.y1 - m.y2)
+        val temp = abs(m.from.x - m.to.x)
+        val temp2 = abs(m.from.y - m.to.y)
 
         if (temp == 1 || temp2 == 1) {
             processNormalMove(m)
         } else {
             // Castling Move
-            movePiece(board, m.x1, m.y1, m.x2, m.y2)
+            movePiece(board, m.from, m.to)
 
             // Move The Rook
             if (m.piece.color == Color.WHITE) {
-                if (m.x2 == 6 && m.y2 == 0) {
+                if (m.to.x == 6 && m.to.y == 0) {
                     // Castling with the right rook
-                    movePiece(board,7, 0, 5, 0)
-                } else if (m.x2 == 2 && m.y2 == 0) {
+                    movePiece(board, Point(7, 0), Point(5, 0))
+                } else if (m.to.x == 2 && m.to.y == 0) {
                     // Castling with the left rook
-                    movePiece(board,0, 0, 3, 0)
+                    movePiece(board, Point(0, 0), Point(3, 0))
                 }
             } else {
-                if (m.x2 == 6 && m.y2 == 7) {
+                if (m.to.x == 6 && m.to.y == 7) {
                     // Castling with the left (From black perspective) rook
-                    movePiece(board, 7, 7, 5, 7)
-                } else if (m.x2 == 2 && m.y2 == 7) {
+                    movePiece(board, Point(7, 7), Point(5, 7))
+                } else if (m.to.x == 2 && m.to.y == 7) {
                     // Castling with the right (From black perspective) rook
-                    movePiece(board, 0, 7, 3, 7)
+                    movePiece(board, Point(0, 7), Point(3, 7))
                 }
             }
 
@@ -73,7 +70,7 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
     private fun processPawnMove(move: Move) {
         val piece = move.piece
 
-        if (move.x1 == move.x2 || board[move.y2][move.x2] != null) {
+        if (move.from.x == move.to.x || board[move.to.y][move.to.x] != null) {
             /* Basic legal forward move OR Capture Move */
             /* TODO Return the captured piece (Returned from processNormalMove call)*/
             processNormalMove(move)
@@ -85,27 +82,25 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
 
             // Capture the opponent piece
             if (piece.color == Color.WHITE) {
-                board[move.y2 - 1][move.x2] = null
+                board[move.to.y - 1][move.to.x] = null
             } else {
-                board[move.y2 + 1][move.x2] = null
+                board[move.to.y + 1][move.to.x] = null
             }
 
             // Put the pawn in the new place
-            board[move.y2][move.x2] = piece
+            board[move.to.y][move.to.x] = piece
         }
 
 
         /* Remove the pawn from the previous place */
-        board[move.y1][move.x1] = null
+        board[move.from.y][move.from.x] = null
     }
 
 
     private fun processNormalMove(move: Move) {
-        if (board[move.y2][move.x2] != null) {
+        if (board[move.to.y][move.to.x] != null) {
             /* TODO Return the captured piece! */
         }
-        movePiece(board, move.x1, move.y1, move.x2, move.y2)
+        movePiece(board, move.from, move.to)
     }
-
-
 }

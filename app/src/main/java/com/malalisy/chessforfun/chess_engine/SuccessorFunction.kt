@@ -2,9 +2,9 @@ package com.malalisy.chessforfun.chess_engine
 
 import com.malalisy.chessforfun.Color
 import com.malalisy.chessforfun.Move
+import com.malalisy.chessforfun.Point
 import com.malalisy.chessforfun.pieces.*
-import com.malalisy.chessforfun.utils.isValidCastlingMove
-import com.malalisy.chessforfun.utils.validPosition
+import com.malalisy.chessforfun.utils.*
 import java.util.ArrayList
 
 class SuccessorFunction() {
@@ -17,12 +17,12 @@ class SuccessorFunction() {
                     continue
 
                 list.addAll(when (board[y][x]) {
-                    is Pawn -> availableMovesForPawn(board, x, y, lastMove)
-                    is Bishop -> availableMovesForBishop(board, x, y)
-                    is Knight -> availableMovesForKnight(board, x, y)
-                    is Rook -> availableMovesForRook(board, x, y)
-                    is Queen -> availableMovesForQueen(board, x, y)
-                    else -> availableMovesForKing(board, x, y)
+                    is Pawn -> availableMovesForPawn(board, Point(x, y), lastMove)
+                    is Bishop -> availableMovesForBishop(board, Point(x, y))
+                    is Knight -> availableMovesForKnight(board, Point(x, y))
+                    is Rook -> availableMovesForRook(board, Point(x, y))
+                    is Queen -> availableMovesForQueen(board, Point(x, y))
+                    else -> availableMovesForKing(board, Point(x, y))
 
                 })
 
@@ -31,28 +31,27 @@ class SuccessorFunction() {
         return list
     }
 
-    private fun availableMovesForKing(board: Array<Array<Piece?>>, x: Int, y: Int): List<Move> {
+    private fun availableMovesForKing(board: Array<Array<Piece?>>, point: Point): List<Move> {
         val list = ArrayList<Move>()
-        val piece = board[y][x]!!
-        val xDirArray = arrayOf(1, 1, 1, 0, 0, -1, -1, -1)
-        val yDirArray = arrayOf(-1, 0, 1, -1, 1, -1, 0, 1)
-        for (step in 0 until xDirArray.size) {
-            val x2 = x + xDirArray[step]
-            val y2 = y + yDirArray[step]
-            if (validPosition(x2, y2) && (board[y2][x2] == null || board[y2][x2]?.color == piece.color))
-                list.add(Move(x, y, x2, y2, piece))
+        val piece = board[point.y][point.x]!!
+
+
+        for (step in 0 until kingDirArray.size) {
+            val to = point + kingDirArray[step]
+            if (validPosition(to.x, to.y) && (board[to.y][to.y] == null || board[to.y][to.x]?.color == piece.color))
+                list.add(Move(point, to, piece))
         }
 
         // Check If castling available
         if ((piece as King).isFirstMove) {
             if (piece.color == Color.WHITE) {
                 // Right castling
-                var castling = Move(x, y, 6, 0, piece)
+                var castling = Move(point, Point(6, 0), piece)
                 if (isValidCastlingMove(board, castling))
                     list.add(castling)
 
                 // Left Castling
-                castling = Move(x, y, 2, 0, piece)
+                castling = Move(point, Point(2, 0), piece)
                 if (isValidCastlingMove(board, castling))
                     list.add(castling)
 
@@ -60,12 +59,12 @@ class SuccessorFunction() {
             } else {
 
                 // Right castling
-                var castling = Move(x, y, 2, 7, piece)
+                var castling = Move(point, Point(2, 7), piece)
                 if (isValidCastlingMove(board, castling))
                     list.add(castling)
 
                 // Left Castling
-                castling = Move(x, y, 6, 7, piece)
+                castling = Move(point, Point(6, 7), piece)
                 if (isValidCastlingMove(board, castling))
                     list.add(castling)
             }
@@ -73,130 +72,122 @@ class SuccessorFunction() {
         return list
     }
 
-    private fun availableMovesForQueen(board: Array<Array<Piece?>>, x: Int, y: Int): List<Move> {
+    private fun availableMovesForQueen(board: Array<Array<Piece?>>, point: Point): List<Move> {
         val list = ArrayList<Move>()
 
-        val xDirArray = arrayOf(1, 1, 1, 0, 0, -1, -1, -1)
-        val yDirArray = arrayOf(-1, 0, 1, -1, 1, -1, 0, 1)
-        for (index in 0 until xDirArray.size) {
-            list.addAll(availableMoves(board, x, y, xDirArray[index], yDirArray[index]))
+        for (d in horiVertDirArray) {
+            list.addAll(availableMoves(board, point, d))
         }
-        return list
-    }
-
-    private fun availableMovesForRook(board: Array<Array<Piece?>>, x: Int, y: Int): List<Move> {
-        val list = ArrayList<Move>()
-
-        val xDirArray = arrayOf(1, -1, 0, 0)
-        val yDirArray = arrayOf(0, 0, 1, -1)
-        for (index in 0 until xDirArray.size) {
-            list.addAll(availableMoves(board, x, y, xDirArray[index], yDirArray[index]))
-        }
-        return list
-    }
-
-    private fun availableMovesForBishop(board: Array<Array<Piece?>>, x: Int, y: Int): List<Move> {
-        val list = ArrayList<Move>()
-
-        val xDirArray = arrayOf(1, 1, -1, -1)
-        val yDirArray = arrayOf(1, -1, 1, -1)
-        for (index in 0 until xDirArray.size) {
-            list.addAll(availableMoves(board, x, y, xDirArray[index], yDirArray[index]))
-        }
-        return list
-    }
-
-    private fun availableMovesForKnight(board: Array<Array<Piece?>>, x: Int, y: Int): List<Move> {
-        val list = ArrayList<Move>()
-        val piece = board[y][x]!!
-
-        val xKDirArray = intArrayOf(-2, -2, 2, 2, -1, 1, -1, 1)
-        val yKDirArray = intArrayOf(-1, 1, -1, 1, -2, -2, 2, 2)
-
-        for (i in 0 until xKDirArray.size) {
-            val x2 = x + xKDirArray[i]
-            val y2 = y + yKDirArray[i]
-            if (validPosition(x2, y2) && (board[y2][x2] == null || board[y2][x2]?.color != piece.color))
-                list.add(Move(x, y, x2, y2, piece))
+        for (d in diagonalDirArray) {
+            list.addAll(availableMoves(board, point, d))
         }
 
         return list
     }
 
-    private fun availableMovesForPawn(board: Array<Array<Piece?>>, x: Int, y: Int, lastMove: Move?): List<Move> {
+    private fun availableMovesForRook(board: Array<Array<Piece?>>, point: Point): List<Move> {
         val list = ArrayList<Move>()
 
-        val piece = board[y][x]!!
+
+        for (d in horiVertDirArray) {
+            list.addAll(availableMoves(board, point, d))
+        }
+        return list
+    }
+
+    private fun availableMovesForBishop(board: Array<Array<Piece?>>, point: Point): List<Move> {
+        val list = ArrayList<Move>()
+
+        for (d in diagonalDirArray) {
+            list.addAll(availableMoves(board, point, d))
+        }
+        return list
+    }
+
+    private fun availableMovesForKnight(board: Array<Array<Piece?>>, point: Point): List<Move> {
+        val list = ArrayList<Move>()
+        val piece = board[point.y][point.x]!!
+
+        for (i in 0 until knightDirArray.size) {
+            val to = point + knightDirArray[i]
+            if (validPosition(to.x, to.y) && (board[to.y][to.x] == null || board[to.y][to.x]?.color != piece.color))
+                list.add(Move(point, to, piece))
+        }
+
+        return list
+    }
+
+    private fun availableMovesForPawn(board: Array<Array<Piece?>>, point: Point, lastMove: Move?): List<Move> {
+        val list = ArrayList<Move>()
+
+        val piece = board[point.y][point.x]!!
 
         if (piece.color == Color.WHITE) {
             // Forward Moves
-            if (board[y + 1][x] == null)
-                list.add(Move(x, y, x, y + 1, piece))
-            if ((piece as Pawn).isFirstMove && board[y + 2][x] == null)
-                list.add(Move(x, y, x, y + 2, piece))
+            if (board[point.y + 1][point.x] == null)
+                list.add(Move(point, point addToY 1, piece))
+            if ((piece as Pawn).isFirstMove && board[point.y + 2][point.x] == null)
+                list.add(Move(point, point addToY 2, piece))
 
             // Capturing moves
-            if (board[y + 1][x - 1] != null && board[y + 1][x - 1]?.color != piece.color)
-                list.add(Move(x, y, x - 1, y + 1, piece))
-            if (board[y + 1][x + 1] != null && board[y + 1][x + 1]?.color != piece.color)
-                list.add(Move(x, y, x + 1, y + 1, piece))
+            if (board[point.y + 1][point.x - 1] != null && board[point.y + 1][point.x - 1]?.color != piece.color)
+                list.add(Move(Point(point.x, point.y), Point(point.x - 1, point.y + 1), piece))
+            if (board[point.y + 1][point.x + 1] != null && board[point.y + 1][point.x + 1]?.color != piece.color)
+                list.add(Move(point, point addToY 1 addToX 1, piece))
 
             // En passant
             if (lastMove != null && lastMove.piece is Pawn
-                    && lastMove.y2 == lastMove.y1 - 2 && y == 4 // Checking if the pawn has the right to En passant
+                    && lastMove.to.y == lastMove.from.y - 2 && point.y == 4 // Checking if the pawn has the right to En passant
             ) {
-                if (x == lastMove.x2 - 1)
-                    list.add(Move(x, y, x + 1, y + 1, piece))
-                if (x == lastMove.x2 + 1)
-                    list.add(Move(x, y, x - 1, y + 1, piece))
+                if (point.x == lastMove.to.x - 1)
+                    list.add(Move(point, point addToX 1 addToY 1, piece))
+                if (point.x == lastMove.to.x + 1)
+                    list.add(Move(point, point addToX -1 addToY 1, piece))
             }
 
 
         } else {
             // Forward Moves
-            if (board[y - 1][x] == null)
-                list.add(Move(x, y, x, y - 1, piece))
-            if ((piece as Pawn).isFirstMove && board[y - 2][x] == null)
-                list.add(Move(x, y, x, y - 2, piece))
+            if (board[point.y - 1][point.x] == null)
+                list.add(Move(point, point addToY -1, piece))
+            if ((piece as Pawn).isFirstMove && board[point.y - 2][point.x] == null)
+                list.add(Move(point, point addToY -2, piece))
 
             // Capturing moves
-            if (board[y - 1][x - 1] != null && board[y - 1][x - 1]?.color != piece.color)
-                list.add(Move(x, y, x - 1, y - 1, piece))
-            if (board[y - 1][x + 1] != null && board[y - 1][x + 1]?.color != piece.color)
-                list.add(Move(x, y, x + 1, y - 1, piece))
+            if (board[point.y - 1][point.x - 1] != null && board[point.y - 1][point.x - 1]?.color != piece.color)
+                list.add(Move(point, point addToY -1 addToX -1, piece))
+            if (board[point.y - 1][point.x + 1] != null && board[point.y - 1][point.x + 1]?.color != piece.color)
+                list.add(Move(point, point addToX 1 addToY -1, piece))
 
             // En passant
             if (lastMove != null && lastMove.piece is Pawn
-                    && lastMove.y2 == lastMove.y1 + 2 && y == 3 // Checking if the pawn has the right to En passant
+                    && lastMove.to.y == lastMove.from.y + 2 && point.y == 3 // Checking if the pawn has the right to En passant
             ) {
-                if (x == lastMove.x2 - 1)
-                    list.add(Move(x, y, x + 1, y - 1, piece))
-                if (x == lastMove.x2 + 1)
-                    list.add(Move(x, y, x - 1, y - 1, piece))
+                if (point.x == lastMove.to.x - 1)
+                    list.add(Move(point, point addToX 1 addToY -1, piece))
+                if (point.x == lastMove.to.x + 1)
+                    list.add(Move(point, point addToY -1 addToX -1, piece))
             }
         }
 
         return list
     }
 
-    private fun availableMoves(board: Array<Array<Piece?>>, x: Int, y: Int, incX: Int, incY: Int): List<Move> {
+    private fun availableMoves(board: Array<Array<Piece?>>, point: Point, inc: Point): List<Move> {
         val list = ArrayList<Move>()
-        val piece = board[y][x]!!
-        var x2 = x
-        var y2 = y
+        val piece = board[point.y][point.x]!!
+        var to = point
         do {
-            x2 += incX
-            y2 += incY
-
-            if (!validPosition(x, y))
+            to += inc
+            if (!validPosition(point.x, point.y))
                 break
 
-            if (board[y2][x2] != null) {
-                if (board[y2][x2]?.color != board[y][x]?.color)
-                    list.add(Move(x, y, x2, y2, piece))
+            if (board[to.y][to.x] != null) {
+                if (board[to.y][to.x]?.color != board[to.y][to.x]?.color)
+                    list.add(Move(point, to, piece))
                 break
             }
-            list.add(Move(x, y, x2, y2, piece))
+            list.add(Move(point, to, piece))
         } while (true)
         return list
     }
