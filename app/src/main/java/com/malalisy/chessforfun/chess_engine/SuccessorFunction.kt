@@ -13,9 +13,8 @@ class SuccessorFunction() {
         val list = ArrayList<Move>()
         for (x in 0..7) {
             for (y in 0..7) {
-                if (board[y][x] != null || board[y][x]?.color != color)
+                if (board[y][x] == null || board[y][x]?.color != color)
                     continue
-
                 list.addAll(when (board[y][x]) {
                     is Pawn -> availableMovesForPawn(board, Point(x, y), lastMove)
                     is Bishop -> availableMovesForBishop(board, Point(x, y))
@@ -28,7 +27,8 @@ class SuccessorFunction() {
 
             }
         }
-        return list
+
+        return list.filter { !willResultInCheck(board, it) }
     }
 
     private fun availableMovesForKing(board: Array<Array<Piece?>>, point: Point): List<Move> {
@@ -38,7 +38,7 @@ class SuccessorFunction() {
 
         for (step in 0 until kingDirArray.size) {
             val to = point + kingDirArray[step]
-            if (validPosition(to.x, to.y) && (board[to.y][to.y] == null || board[to.y][to.x]?.color == piece.color))
+            if (validPosition(to.x, to.y) && (board[to.y][to.y] == null || board[to.y][to.x]?.color != piece.color))
                 list.add(Move(point, to, piece))
         }
 
@@ -124,15 +124,15 @@ class SuccessorFunction() {
 
         if (piece.color == Color.WHITE) {
             // Forward Moves
-            if (board[point.y + 1][point.x] == null)
+            if (validPosition(point.x, point.y + 1) && board[point.y + 1][point.x] == null)
                 list.add(Move(point, point addToY 1, piece))
-            if ((piece as Pawn).isFirstMove && board[point.y + 2][point.x] == null)
+            if ((piece as Pawn).isFirstMove(point.y) && board[point.y + 2][point.x] == null)
                 list.add(Move(point, point addToY 2, piece))
 
             // Capturing moves
-            if (board[point.y + 1][point.x - 1] != null && board[point.y + 1][point.x - 1]?.color != piece.color)
+            if (validPosition(point.x - 1, point.y + 1) && board[point.y + 1][point.x - 1] != null && board[point.y + 1][point.x - 1]?.color != piece.color)
                 list.add(Move(Point(point.x, point.y), Point(point.x - 1, point.y + 1), piece))
-            if (board[point.y + 1][point.x + 1] != null && board[point.y + 1][point.x + 1]?.color != piece.color)
+            if (validPosition(point.x + 1, point.y + 1) && board[point.y + 1][point.x + 1] != null && board[point.y + 1][point.x + 1]?.color != piece.color)
                 list.add(Move(point, point addToY 1 addToX 1, piece))
 
             // En passant
@@ -148,15 +148,15 @@ class SuccessorFunction() {
 
         } else {
             // Forward Moves
-            if (board[point.y - 1][point.x] == null)
+            if (validPosition(point.x, point.y - 1) && board[point.y - 1][point.x] == null)
                 list.add(Move(point, point addToY -1, piece))
-            if ((piece as Pawn).isFirstMove && board[point.y - 2][point.x] == null)
+            if ((piece as Pawn).isFirstMove(point.y) && board[point.y - 2][point.x] == null)
                 list.add(Move(point, point addToY -2, piece))
-
             // Capturing moves
-            if (board[point.y - 1][point.x - 1] != null && board[point.y - 1][point.x - 1]?.color != piece.color)
+            if (validPosition(point.x - 1, point.y - 1) && board[point.y - 1][point.x - 1] != null && board[point.y - 1][point.x - 1]?.color != piece.color) {
                 list.add(Move(point, point addToY -1 addToX -1, piece))
-            if (board[point.y - 1][point.x + 1] != null && board[point.y - 1][point.x + 1]?.color != piece.color)
+            }
+            if (validPosition(point.x + 1, point.y - 1) && board[point.y - 1][point.x + 1] != null && board[point.y - 1][point.x + 1]?.color != piece.color)
                 list.add(Move(point, point addToX 1 addToY -1, piece))
 
             // En passant
@@ -179,11 +179,12 @@ class SuccessorFunction() {
         var to = point
         do {
             to += inc
-            if (!validPosition(point.x, point.y))
+            if (!validPosition(to.x, to.y)) {
                 break
+            }
 
             if (board[to.y][to.x] != null) {
-                if (board[to.y][to.x]?.color != board[to.y][to.x]?.color)
+                if (piece.color != board[to.y][to.x]?.color)
                     list.add(Move(point, to, piece))
                 break
             }

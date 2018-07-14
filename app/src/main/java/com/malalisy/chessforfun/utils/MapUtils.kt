@@ -16,8 +16,8 @@ fun boardFromMap(map: String): Array<Array<Piece?>> {
 
             board[i][j] = when (mapList[i * 8 + j]) {
                 "." -> null
-                "PW" -> Pawn(Color.WHITE, i == 1)
-                "PB" -> Pawn(Color.BLACK, i == 6)
+                "PW" -> Pawn(Color.WHITE)
+                "PB" -> Pawn(Color.BLACK)
 
                 "RWF" -> Rook(Color.WHITE, true) // F = Firs Move
                 "RWN" -> Rook(Color.WHITE, false)

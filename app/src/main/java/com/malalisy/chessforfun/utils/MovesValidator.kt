@@ -22,6 +22,13 @@ fun isLegalMove(board: Array<Array<Piece?>>, m: Move, lastMove: Move?): Boolean 
     return false
 }
 
+fun willResultInCheck(board: Array<Array<Piece?>>, move: Move): Boolean {
+    val nBoard = copyBoard(board)
+    nBoard[move.to.y][move.to.x] = board[move.from.y][move.from.x]
+    nBoard[move.from.y][move.from.x] = null
+    return isKingInCheck(nBoard, move.piece.color)
+}
+
 private fun validateKingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
     val temp = abs(m.from.x - m.to.x)
     val temp2 = abs(m.from.y - m.to.y)
@@ -88,12 +95,7 @@ private fun basicValidation(board: Array<Array<Piece?>>, move: Move): Boolean {
         return false
     if (board[move.to.y][move.to.x] != null && move.piece.color == board[move.to.y][move.to.x]?.color)
         return false
-
-    var nBoard = copyBoard(board)
-    nBoard[move.to.y][move.to.x] = board[move.from.y][move.from.x]
-    nBoard[move.from.y][move.from.x] = null
-
-    return !isKingInCheck(nBoard, move.piece.color)
+    return !willResultInCheck(board, move)
 }
 
 private fun validatePawnMove(board: Array<Array<Piece?>>, m: Move, lastMove: Move?): Boolean {
@@ -101,7 +103,7 @@ private fun validatePawnMove(board: Array<Array<Piece?>>, m: Move, lastMove: Mov
     if (piece.color == Color.WHITE) {
 
         // Basic one step or tow steps forward move
-        if (m.to.y == m.from.y + 1 || piece.isFirstMove && m.to.y == m.from.y + 2 && board[m.to.y][m.to.x] == null)
+        if (m.to.y == m.from.y + 1 || piece.isFirstMove(m.from.y) && m.to.y == m.from.y + 2 && board[m.to.y][m.to.x] == null)
             return true
         // Capturing
         if (m.to.y == m.from.y + 1 && (m.to.x == m.from.x + 1 || m.to.x == m.from.x - 1))
@@ -129,7 +131,7 @@ private fun validatePawnMove(board: Array<Array<Piece?>>, m: Move, lastMove: Mov
     } else {
 
         // Basic one step or tow steps forward move
-        if (m.to.y == m.from.y - 1 || piece.isFirstMove && m.to.y == m.from.y - 2 && board[m.to.y][m.to.x] == null)
+        if (m.to.y == m.from.y - 1 || piece.isFirstMove(m.from.y) && m.to.y == m.from.y - 2 && board[m.to.y][m.to.x] == null)
             return true
         // Capturing
         if (m.to.y == m.from.y - 1 && (m.to.x == m.from.x + 1 || m.to.x == m.from.x - 1))

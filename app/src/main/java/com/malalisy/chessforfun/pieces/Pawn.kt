@@ -3,7 +3,7 @@ package com.malalisy.chessforfun.pieces
 import com.malalisy.chessforfun.Color
 
 
-class Pawn(color: Color, var isFirstMove: Boolean) : Piece(color) {
+class Pawn(color: Color) : Piece(color) {
 
     override fun toString(): String {
         return "P" + if (color == Color.WHITE) {
@@ -13,5 +13,9 @@ class Pawn(color: Color, var isFirstMove: Boolean) : Piece(color) {
         }
     }
 
+
+    fun isFirstMove(y: Int): Boolean {
+        return if (color == Color.WHITE) y == 1 else y == 6
+    }
 
 }

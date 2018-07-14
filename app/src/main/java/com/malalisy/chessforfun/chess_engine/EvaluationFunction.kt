@@ -17,9 +17,11 @@ class EvaluationFunction {
         )
     }
 
-    fun evaluate(board: Array<Array<Piece?>>, color: Color, lastMove: Move): Int {
+    fun evaluate(board: Array<Array<Piece?>>, color: Color, lastMove: Move?): Int {
         if (isCheckMate(board, color, lastMove))
             return Int.MIN_VALUE
+        else if (isCheckMate(board, color.opposite(), lastMove))
+            return Int.MAX_VALUE
 
         var totalEvaluation = 0
         for (evaluationFeature in evaluationFeatures)

@@ -9,20 +9,21 @@ import com.malalisy.chessforfun.utils.movePiece
 import kotlin.math.max
 import kotlin.math.min
 
-class MoveChooser {
+class MoveChooser(val mColor: Color) {
 
     val evaluationFunction = EvaluationFunction()
 
-    fun chooseMove(board: Array<Array<Piece?>>, color: Color, difficulty: Int, lastMove: Move): Move = alphaBetaSearch(board, color, difficulty, lastMove)
-
-    private fun alphaBetaSearch(board: Array<Array<Piece?>>, color: Color, difficulty: Int, lastMove: Move): Move {
+    /*
+    * Alpha-Beta Search
+    * */
+    fun chooseMove(board: Array<Array<Piece?>>, difficulty: Int, lastMove: Move?): Move {
         var bestMove: Move? = null
         var maxUtility = Double.NEGATIVE_INFINITY
 
-        for (move in SuccessorFunction().getAllAvailableMoves(board, color, lastMove)) {
+        for (move in SuccessorFunction().getAllAvailableMoves(board, mColor, lastMove)) {
             val cBoard = copyBoard(board)
             movePiece(cBoard, move) // New state after making the action
-            val moveUil = minValue(cBoard, color, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, difficulty - 1, lastMove)
+            val moveUil = minValue(cBoard, mColor.opposite(), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, difficulty - 1, move)
 
             if (moveUil > maxUtility) {
                 bestMove = move
@@ -34,9 +35,9 @@ class MoveChooser {
         return bestMove!!
     }
 
-    private fun maxValue(board: Array<Array<Piece?>>, color: Color, alpha: Double, beta: Double, depth: Int, lastMove: Move): Double {
-        if (teminalTest(board, depth, color, lastMove)) {
-            return evaluationFunction.evaluate(board, color, lastMove).toDouble()
+    private fun maxValue(board: Array<Array<Piece?>>, color: Color, alpha: Double, beta: Double, depth: Int, lastMove: Move?): Double {
+        if (teminalTest(board, depth, mColor, lastMove)) {
+            return evaluationFunction.evaluate(board, mColor, lastMove).toDouble()
         }
         var v = Double.NEGATIVE_INFINITY
         var a = alpha
@@ -44,7 +45,7 @@ class MoveChooser {
         for (move in SuccessorFunction().getAllAvailableMoves(board, color, lastMove)) {
             val cBoard = copyBoard(board)
             movePiece(cBoard, move) // New state after making the action
-            v = max(v, minValue(cBoard, color, a, beta, depth - 1, move))
+            v = max(v, minValue(cBoard, color.opposite(), a, beta, depth - 1, move))
             a = max(a, v)
             if (a >= beta)
                 break
@@ -52,9 +53,9 @@ class MoveChooser {
         return v
     }
 
-    private fun minValue(board: Array<Array<Piece?>>, color: Color, alpha: Double, beta: Double, depth: Int, lastMove: Move): Double {
-        if (teminalTest(board, depth, color, lastMove)) {
-            return evaluationFunction.evaluate(board, color, lastMove).toDouble()
+    private fun minValue(board: Array<Array<Piece?>>, color: Color, alpha: Double, beta: Double, depth: Int, lastMove: Move?): Double {
+        if (teminalTest(board, depth, mColor, lastMove)) {
+            return evaluationFunction.evaluate(board, mColor, lastMove).toDouble()
         }
         var v = Double.POSITIVE_INFINITY
         var b = beta
@@ -62,7 +63,7 @@ class MoveChooser {
         for (move in SuccessorFunction().getAllAvailableMoves(board, color, lastMove)) {
             val cBoard = copyBoard(board)
             movePiece(cBoard, move) // New state after making the action
-            v = min(v, maxValue(cBoard, color, alpha, beta, depth - 1, move))
+            v = min(v, maxValue(cBoard, color.opposite(), alpha, beta, depth - 1, move))
             b = min(b, v)
             if (alpha >= b)
                 break
@@ -71,7 +72,10 @@ class MoveChooser {
     }
 
 
-    private fun teminalTest(board: Array<Array<Piece?>>, depth: Int, color: Color, lastMove: Move): Boolean {
-        return depth == 0 || isCheckMate(board, color, lastMove)
+    private fun teminalTest(board: Array<Array<Piece?>>, depth: Int, color: Color, lastMove: Move?): Boolean {
+        /*
+        * TODO: CHECK FOR DRAW (NO VALID MOVES OR INSUFFICIENT MATERIALS)
+        * */
+        return depth == 0 || isCheckMate(board, color, lastMove) || isCheckMate(board, color.opposite(), lastMove)
     }
 }
