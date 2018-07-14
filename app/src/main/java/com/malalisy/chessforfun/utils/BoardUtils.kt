@@ -96,6 +96,12 @@ fun isCheckMate(board: Array<Array<Piece?>>, color: Color, lastMove: Move?): Boo
     return true
 }
 
+fun getPieceCanAttack(board: Array<Array<Piece?>>, point: Point, color: Color, lastMove: Move?): List<Pair<Point, Piece>> {
+    val copyBoard = copyBoard(board)
+    copyBoard[point.y][point.x] = Pawn(color.opposite())
+    return getPieceCanMoveTo(copyBoard, point, color, lastMove)
+}
+
 fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, lastMove: Move?): List<Pair<Point, Piece>> {
     val list = ArrayList<Pair<Point, Piece>>()
 

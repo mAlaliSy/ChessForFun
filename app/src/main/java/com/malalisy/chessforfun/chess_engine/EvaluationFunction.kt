@@ -2,6 +2,8 @@ package com.malalisy.chessforfun.chess_engine
 
 import com.malalisy.chessforfun.Color
 import com.malalisy.chessforfun.Move
+import com.malalisy.chessforfun.chess_engine.evaluation_functions.CenterControlEvaluation
+import com.malalisy.chessforfun.chess_engine.evaluation_functions.DoubledPawnsEvaluation
 import com.malalisy.chessforfun.chess_engine.evaluation_functions.EvaluationFeature
 import com.malalisy.chessforfun.chess_engine.evaluation_functions.MaterialEvaluation
 import com.malalisy.chessforfun.pieces.*
@@ -13,7 +15,9 @@ class EvaluationFunction {
 
     init {
         evaluationFeatures = arrayOf(
-                MaterialEvaluation()
+                MaterialEvaluation(),
+                CenterControlEvaluation(),
+                DoubledPawnsEvaluation()
         )
     }
 
