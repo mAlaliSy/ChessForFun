@@ -1,9 +1,9 @@
 package com.malalisy.chessforfun.utils
 
-import com.malalisy.chessforfun.Color
-import com.malalisy.chessforfun.Move
-import com.malalisy.chessforfun.Point
-import com.malalisy.chessforfun.pieces.*
+import com.malalisy.chessforfun.pojos.PlayerColor
+import com.malalisy.chessforfun.pojos.Move
+import com.malalisy.chessforfun.pojos.Point
+import com.malalisy.chessforfun.pojos.pieces.*
 import kotlin.math.abs
 
 fun validPosition(x: Int, y: Int) = x in 0..7 && y in 0..7
@@ -23,15 +23,15 @@ fun movePiece(board: Array<Array<Piece?>>, p1: Point, p2: Point) {
     board[p1.y][p1.x] = null
 }
 
-fun movePiece(board: Array<Array<Piece?>>, move: Move) {
+fun movePiece(board: Array<Array<Piece?>>, move: com.malalisy.chessforfun.pojos.Move) {
     movePiece(board, move.from, move.to)
 }
 
 
-private fun getKingPosition(board: Array<Array<Piece?>>, color: Color): Point {
+private fun getKingPosition(board: Array<Array<Piece?>>, playerColor: PlayerColor): Point {
     for (i in 0..7) {
         for (j in 0..7) {
-            if (board[j][i] != null && board[j][i] is King && board[j][i]?.color == color) {
+            if (board[j][i] != null && board[j][i] is King && board[j][i]?.playerColor == playerColor) {
                 return Point(i, j)
             }
         }
@@ -39,17 +39,17 @@ private fun getKingPosition(board: Array<Array<Piece?>>, color: Color): Point {
     return Point(0, 0)
 }
 
-fun isKingInCheck(board: Array<Array<Piece?>>, color: Color): Boolean {
-    val kingPosition = getKingPosition(board, color)
-    return getPieceCanMoveTo(board, kingPosition, color.opposite(), null).isNotEmpty()
+fun isKingInCheck(board: Array<Array<Piece?>>, playerColor: PlayerColor): Boolean {
+    val kingPosition = getKingPosition(board, playerColor)
+    return getPieceCanMoveTo(board, kingPosition, playerColor.opposite(), null).isNotEmpty()
 }
 
-fun isCheckMate(board: Array<Array<Piece?>>, color: Color, lastMove: Move?): Boolean {
-    val kingPosition = getKingPosition(board, color)
+fun isCheckMate(board: Array<Array<Piece?>>, playerColor: PlayerColor, lastMove: com.malalisy.chessforfun.pojos.Move?): Boolean {
+    val kingPosition = getKingPosition(board, playerColor)
     val king = board[kingPosition.y][kingPosition.x]
 
     /*Check if the the king is in check */
-    var piecesCanAttack = getPieceCanMoveTo(board, kingPosition, color.opposite(), null)
+    var piecesCanAttack = getPieceCanMoveTo(board, kingPosition, playerColor.opposite(), null)
     if (piecesCanAttack.isEmpty()) {
         /*
         * Not in check
@@ -61,7 +61,7 @@ fun isCheckMate(board: Array<Array<Piece?>>, color: Color, lastMove: Move?): Boo
     if (piecesCanAttack.size == 1) {
         val piecePoint = piecesCanAttack[0].first
         /*Check if there is a piece that can take the piece attacking the king*/
-        if (getPieceCanMoveTo(board, piecePoint, color, null).isNotEmpty()) {
+        if (getPieceCanMoveTo(board, piecePoint, playerColor, null).isNotEmpty()) {
             return false
         }
 
@@ -81,7 +81,7 @@ fun isCheckMate(board: Array<Array<Piece?>>, color: Color, lastMove: Move?): Boo
                 i += xDir
                 j += yDir
 
-                if (getPieceCanMoveTo(board, Point(i, j), color, lastMove).isNotEmpty()) {
+                if (getPieceCanMoveTo(board, Point(i, j), playerColor, lastMove).isNotEmpty()) {
                     return false
                 }
             } while (i != piece.first.x || j != piece.first.y)
@@ -89,31 +89,31 @@ fun isCheckMate(board: Array<Array<Piece?>>, color: Color, lastMove: Move?): Boo
     }
 
     for (dir in kingDirArray) {
-        if (isLegalMove(board, Move(kingPosition, kingPosition + dir, king!!), null)) {
+        if (isLegalMove(board, com.malalisy.chessforfun.pojos.Move(kingPosition, kingPosition + dir, king!!), null)) {
             return false
         }
     }
     return true
 }
 
-fun getPieceCanAttack(board: Array<Array<Piece?>>, point: Point, color: Color, lastMove: Move?): List<Pair<Point, Piece>> {
+fun getPieceCanAttack(board: Array<Array<Piece?>>, point: Point, playerColor: PlayerColor, lastMove: com.malalisy.chessforfun.pojos.Move?): List<Pair<Point, Piece>> {
     val copyBoard = copyBoard(board)
-    copyBoard[point.y][point.x] = Pawn(color.opposite())
-    return getPieceCanMoveTo(copyBoard, point, color, lastMove)
+    copyBoard[point.y][point.x] = Pawn(playerColor.opposite())
+    return getPieceCanMoveTo(copyBoard, point, playerColor, lastMove)
 }
 
-fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, lastMove: Move?): List<Pair<Point, Piece>> {
+fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, playerColor: PlayerColor, lastMove: com.malalisy.chessforfun.pojos.Move?): List<Pair<Point, Piece>> {
     val list = ArrayList<Pair<Point, Piece>>()
 
     /* Pawns that can move to this position */
-    if (color == Color.WHITE) {
+    if (playerColor == PlayerColor.WHITE) {
 
 
         /*
         * Attacking move
         * */
-        if (isPawn(board, Point(point.x + 1, point.y - 1), color)
-                && board[point.y][point.x] != null && board[point.y][point.x]!!.color != color
+        if (isPawn(board, Point(point.x + 1, point.y - 1), playerColor)
+                && board[point.y][point.x] != null && board[point.y][point.x]!!.playerColor != playerColor
                 /*
                 * En passant move
                 * */
@@ -125,8 +125,8 @@ fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, l
         /*
         * Attacking move
         * */
-        if (isPawn(board, Point(point.x - 1, point.y - 1), color)
-                && board[point.y][point.x] != null && board[point.y][point.x]!!.color != color
+        if (isPawn(board, Point(point.x - 1, point.y - 1), playerColor)
+                && board[point.y][point.x] != null && board[point.y][point.x]!!.playerColor != playerColor
                 /*
                 * En passant move
                 * */
@@ -138,7 +138,7 @@ fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, l
         /*
         * Forward move
         * */
-        if (isPawn(board, Point(point.x, point.y - 1), color) &&
+        if (isPawn(board, Point(point.x, point.y - 1), playerColor) &&
                 board[point.y][point.x] == null) {
             list.add(Pair(Point(point.x, point.y - 1), board[point.y - 1][point.x]!!))
         }
@@ -147,7 +147,7 @@ fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, l
         * Two steps forward move
         * */
         if (point.y == 3 &&
-                isPawn(board, Point(point.x, 1), color) && board[3][point.x] == null) {
+                isPawn(board, Point(point.x, 1), playerColor) && board[3][point.x] == null) {
             list.add(Pair(Point(point.x, 1), board[1][point.x]!!))
         }
 
@@ -156,8 +156,8 @@ fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, l
         /*
         * Attacking move
         * */
-        if (isPawn(board, Point(point.x + 1, point.y + 1), color)
-                && board[point.y][point.x] != null && board[point.y][point.x]!!.color != color
+        if (isPawn(board, Point(point.x + 1, point.y + 1), playerColor)
+                && board[point.y][point.x] != null && board[point.y][point.x]!!.playerColor != playerColor
                 /*
                 * En passant move
                 * */
@@ -168,8 +168,8 @@ fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, l
         /*
         * Attacking move
         * */
-        if (isPawn(board, Point(point.x - 1, point.y + 1), color)
-                && board[point.y][point.x] != null && board[point.y][point.x]!!.color != color
+        if (isPawn(board, Point(point.x - 1, point.y + 1), playerColor)
+                && board[point.y][point.x] != null && board[point.y][point.x]!!.playerColor != playerColor
                 /*
                 * En passant move
                 * */
@@ -180,7 +180,7 @@ fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, l
         /*
         * Forward move
         * */
-        if (isPawn(board, Point(point.x, point.y + 1), color) &&
+        if (isPawn(board, Point(point.x, point.y + 1), playerColor) &&
                 board[point.y][point.x] == null) {
             list.add(Pair(Point(point.x, point.y + 1), board[point.y + 1][point.x]!!))
         }
@@ -189,13 +189,13 @@ fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, l
         * Two steps forward move
         * */
         if (point.y == 4 &&
-                isPawn(board, Point(point.x, 6), color) && board[4][point.x] == null) {
+                isPawn(board, Point(point.x, 6), playerColor) && board[4][point.x] == null) {
             list.add(Pair(Point(point.x, 6), board[6][point.x]!!))
         }
     }
 
     for (dir in knightDirArray) {
-        if (isKnight(board, point + dir, color))
+        if (isKnight(board, point + dir, playerColor))
             list.add(Pair(point + dir, board[point.y + dir.y][point.x + dir.x]!!))
     }
 
@@ -205,7 +205,7 @@ fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, l
 
         if (horiPiece != null) {
             /*There is a piece, check if it is queen or rook*/
-            if (horiPiece.second.color == color && (horiPiece.second is Queen || horiPiece.second is Rook))
+            if (horiPiece.second.playerColor == playerColor && (horiPiece.second is Queen || horiPiece.second is Rook))
                 list.add(horiPiece)
         }
 
@@ -216,7 +216,7 @@ fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, color: Color, l
         val nearestDiagonalPiece = getNearestPiece(board, point, dir.x, dir.y)
         if (nearestDiagonalPiece != null) {
             // There is a piece, check if it is bishop or queen
-            if (nearestDiagonalPiece.second.color == color && (nearestDiagonalPiece.second is Bishop || nearestDiagonalPiece.second is Queen))
+            if (nearestDiagonalPiece.second.playerColor == playerColor && (nearestDiagonalPiece.second is Bishop || nearestDiagonalPiece.second is Queen))
                 list.add(nearestDiagonalPiece)
         }
     }
@@ -256,18 +256,18 @@ fun getNearestPieceUntil(board: Array<Array<Piece?>>, x1: Int, y1: Int, x2: Int,
 }
 
 // Check if there is knight on this position
-fun isKnight(board: Array<Array<Piece?>>, point: Point, color: Color) = validPosition(point.x, point.y) && board[point.y][point.x] != null && board[point.y][point.x] is Knight && board[point.y][point.x]?.color == color
+fun isKnight(board: Array<Array<Piece?>>, point: Point, playerColor: PlayerColor) = validPosition(point.x, point.y) && board[point.y][point.x] != null && board[point.y][point.x] is Knight && board[point.y][point.x]?.playerColor == playerColor
 
 // Check if there is pawn on this position
-fun isPawn(board: Array<Array<Piece?>>, point: Point, color: Color) = validPosition(point.x, point.y) && board[point.y][point.x] != null && board[point.y][point.x] is Pawn && board[point.y][point.x]?.color == color
+fun isPawn(board: Array<Array<Piece?>>, point: Point, playerColor: PlayerColor) = validPosition(point.x, point.y) && board[point.y][point.x] != null && board[point.y][point.x] is Pawn && board[point.y][point.x]?.playerColor == playerColor
 
-fun canEnPassant(board: Array<Array<Piece?>>, pawnPosition: Point, lastMove: Move?, xDir: Int): Boolean {
+fun canEnPassant(board: Array<Array<Piece?>>, pawnPosition: Point, lastMove: com.malalisy.chessforfun.pojos.Move?, xDir: Int): Boolean {
     if (!validPosition(pawnPosition.x, pawnPosition.y))
         return false
     if (board[pawnPosition.y][pawnPosition.x] == null)
         return false
 
-    if (board[pawnPosition.y][pawnPosition.x]!!.color == Color.WHITE) {
+    if (board[pawnPosition.y][pawnPosition.x]!!.playerColor == PlayerColor.WHITE) {
         /*
         * Check if the last move was tow step move of a pawn
         * */

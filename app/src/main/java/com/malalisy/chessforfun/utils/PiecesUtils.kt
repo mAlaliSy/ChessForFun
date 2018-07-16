@@ -1,6 +1,6 @@
 package com.malalisy.chessforfun.utils
 
-import com.malalisy.chessforfun.Point
+import com.malalisy.chessforfun.pojos.Point
 
 val kingDirArray = arrayOf(Point(-1, -1), Point(-1, 0), Point(-1, 1), Point(0, -1), Point(0, 1), Point(1, -1), Point(1, 0), Point(1, 1))
 

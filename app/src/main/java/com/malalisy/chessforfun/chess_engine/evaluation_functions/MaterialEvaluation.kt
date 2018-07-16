@@ -1,7 +1,7 @@
 package com.malalisy.chessforfun.chess_engine.evaluation_functions
 
-import com.malalisy.chessforfun.Color
-import com.malalisy.chessforfun.pieces.*
+import com.malalisy.chessforfun.pojos.PlayerColor
+import com.malalisy.chessforfun.pojos.pieces.*
 
 class MaterialEvaluation : EvaluationFeature {
 
@@ -75,17 +75,17 @@ class MaterialEvaluation : EvaluationFeature {
     )
 
 
-    override fun evaluate(board: Array<Array<Piece?>>, color: Color): Int {
+    override fun evaluate(board: Array<Array<Piece?>>, playerColor: PlayerColor): Int {
         var score = 0
         var opponentScore = 0
 
         for (y in 0 until 8) {
             for (x in 0 until 8) {
                 if (board[y][x] != null) {
-                    if (board[y][x]?.color == color)
-                        score += getPieceValue(board[y][x]!!, color, x, y)
+                    if (board[y][x]?.playerColor == playerColor)
+                        score += getPieceValue(board[y][x]!!, playerColor, x, y)
                     else
-                        opponentScore += getPieceValue(board[y][x]!!, color.opposite(), x, y)
+                        opponentScore += getPieceValue(board[y][x]!!, playerColor.opposite(), x, y)
                 }
             }
         }
@@ -94,25 +94,25 @@ class MaterialEvaluation : EvaluationFeature {
     }
 
 
-    private fun getPieceValue(piece: Piece, color: Color, x: Int, y: Int): Int {
+    private fun getPieceValue(piece: Piece, playerColor: PlayerColor, x: Int, y: Int): Int {
         when (piece) {
             is Pawn -> {
-                return 100 + if (color == Color.WHITE) PAWN_SQUARE_TABLE[y][x] else PAWN_SQUARE_TABLE[7 - y][x]
+                return 100 + if (playerColor == PlayerColor.WHITE) PAWN_SQUARE_TABLE[y][x] else PAWN_SQUARE_TABLE[7 - y][x]
             }
             is Knight -> {
-                return 320 + if (color == Color.WHITE) KNIGHT_SQUARE_TABLE[y][x] else KNIGHT_SQUARE_TABLE[7 - y][x]
+                return 320 + if (playerColor == PlayerColor.WHITE) KNIGHT_SQUARE_TABLE[y][x] else KNIGHT_SQUARE_TABLE[7 - y][x]
             }
             is Bishop -> {
-                return 330 + if (color == Color.WHITE) BISHOP_SQUARE_TABLE[y][x] else BISHOP_SQUARE_TABLE[7 - y][x]
+                return 330 + if (playerColor == PlayerColor.WHITE) BISHOP_SQUARE_TABLE[y][x] else BISHOP_SQUARE_TABLE[7 - y][x]
             }
             is Rook -> {
-                return 500 + if (color == Color.WHITE) ROOK_SQUARE_TABLE[y][x] else ROOK_SQUARE_TABLE[7 - y][x]
+                return 500 + if (playerColor == PlayerColor.WHITE) ROOK_SQUARE_TABLE[y][x] else ROOK_SQUARE_TABLE[7 - y][x]
             }
             is Queen -> {
-                return 900 + if (color == Color.WHITE) QUEEN_SQUARE_TABLE[y][x] else QUEEN_SQUARE_TABLE[7 - y][x]
+                return 900 + if (playerColor == PlayerColor.WHITE) QUEEN_SQUARE_TABLE[y][x] else QUEEN_SQUARE_TABLE[7 - y][x]
             }
             is King -> {
-                return 20000 + if (color == Color.WHITE) KING_SQUARE_TABLE[y][x] else KING_SQUARE_TABLE[7 - y][x]
+                return 20000 + if (playerColor == PlayerColor.WHITE) KING_SQUARE_TABLE[y][x] else KING_SQUARE_TABLE[7 - y][x]
             }
         }
         return 0

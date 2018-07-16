@@ -1,4 +1,4 @@
-package com.malalisy.chessforfun
+package com.malalisy.chessforfun.pojos
 
 data class Point(var x: Int, var y: Int) {
     operator fun plus(point: Point) = Point(point.x + x, point.y + y)

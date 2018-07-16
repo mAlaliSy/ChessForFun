@@ -1,11 +1,11 @@
 package com.malalisy.chessforfun.chess_engine.evaluation_functions
 
-import com.malalisy.chessforfun.Color
-import com.malalisy.chessforfun.pieces.Pawn
-import com.malalisy.chessforfun.pieces.Piece
+import com.malalisy.chessforfun.pojos.PlayerColor
+import com.malalisy.chessforfun.pojos.pieces.Pawn
+import com.malalisy.chessforfun.pojos.pieces.Piece
 
 class DoubledPawnsEvaluation : EvaluationFeature {
-    override fun evaluate(board: Array<Array<Piece?>>, color: Color): Int {
+    override fun evaluate(board: Array<Array<Piece?>>, playerColor: PlayerColor): Int {
         var score = 0
         var opponentScore = 0
 
@@ -22,7 +22,7 @@ class DoubledPawnsEvaluation : EvaluationFeature {
             * */
             for (y in 1 until 8) {
                 if (board[y][x] != null && board[y][x] is Pawn) {
-                    if (board[y][x]?.color == color) {
+                    if (board[y][x]?.playerColor == playerColor) {
                         nPawns++
                     } else {
                         opponentNPawns++

@@ -1,7 +1,7 @@
 package com.malalisy.chessforfun.utils
 
-import com.malalisy.chessforfun.Color
-import com.malalisy.chessforfun.pieces.*
+import com.malalisy.chessforfun.pojos.PlayerColor
+import com.malalisy.chessforfun.pojos.pieces.*
 
 
 fun boardFromMap(map: String): Array<Array<Piece?>> {
@@ -16,27 +16,27 @@ fun boardFromMap(map: String): Array<Array<Piece?>> {
 
             board[i][j] = when (mapList[i * 8 + j]) {
                 "." -> null
-                "PW" -> Pawn(Color.WHITE)
-                "PB" -> Pawn(Color.BLACK)
+                "PW" -> Pawn(PlayerColor.WHITE)
+                "PB" -> Pawn(PlayerColor.BLACK)
 
-                "RWF" -> Rook(Color.WHITE, true) // F = Firs Move
-                "RWN" -> Rook(Color.WHITE, false)
-                "RBF" -> Rook(Color.BLACK, true)
-                "RBN" -> Rook(Color.BLACK, false)
+                "RWF" -> Rook(PlayerColor.WHITE, true) // F = Firs Move
+                "RWN" -> Rook(PlayerColor.WHITE, false)
+                "RBF" -> Rook(PlayerColor.BLACK, true)
+                "RBN" -> Rook(PlayerColor.BLACK, false)
 
-                "NW" -> Knight(Color.WHITE)
-                "NB" -> Knight(Color.BLACK)
+                "NW" -> Knight(PlayerColor.WHITE)
+                "NB" -> Knight(PlayerColor.BLACK)
 
-                "BW" -> Bishop(Color.WHITE)
-                "BB" -> Bishop(Color.BLACK)
+                "BW" -> Bishop(PlayerColor.WHITE)
+                "BB" -> Bishop(PlayerColor.BLACK)
 
-                "QW" -> Queen(Color.WHITE)
-                "QB" -> Queen(Color.BLACK)
+                "QW" -> Queen(PlayerColor.WHITE)
+                "QB" -> Queen(PlayerColor.BLACK)
 
-                "KWF" -> King(Color.WHITE, true)
-                "KWN" -> King(Color.WHITE, false)
-                "KBF" -> King(Color.BLACK, true)
-                "KBN" -> King(Color.BLACK, false)
+                "KWF" -> King(PlayerColor.WHITE, true)
+                "KWN" -> King(PlayerColor.WHITE, false)
+                "KBF" -> King(PlayerColor.BLACK, true)
+                "KBN" -> King(PlayerColor.BLACK, false)
 
                 else -> null
             }
@@ -65,9 +65,9 @@ fun boardToMap(board: Array<Array<Piece?>>): String {
         for (j in 0..7) {
 
             var tile = ""
-            if (board[i][j]?.color == Color.WHITE)
+            if (board[i][j]?.playerColor == PlayerColor.WHITE)
                 tile = "W"
-            else if (board[i][j]?.color == Color.BLACK)
+            else if (board[i][j]?.playerColor == PlayerColor.BLACK)
                 tile = "B"
 
             when (board[i][j]) {

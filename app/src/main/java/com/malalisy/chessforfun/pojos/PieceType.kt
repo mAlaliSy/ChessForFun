@@ -1,4 +1,4 @@
-package com.malalisy.chessforfun
+package com.malalisy.chessforfun.pojos
 
 enum class PieceType {
     PAWN {

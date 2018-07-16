@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ChessForFun</string>
+    <string name="fa_icon_areachart">&#xf447;</string>
+
 </resources>

@@ -1,29 +1,29 @@
 package com.malalisy.chessforfun.chess_engine
 
-import com.malalisy.chessforfun.Color
-import com.malalisy.chessforfun.Move
-import com.malalisy.chessforfun.pieces.Piece
+import com.malalisy.chessforfun.pojos.PlayerColor
+import com.malalisy.chessforfun.pojos.Move
+import com.malalisy.chessforfun.pojos.pieces.Piece
 import com.malalisy.chessforfun.utils.copyBoard
 import com.malalisy.chessforfun.utils.isCheckMate
 import com.malalisy.chessforfun.utils.movePiece
 import kotlin.math.max
 import kotlin.math.min
 
-class MoveChooser(val mColor: Color) {
+class MoveChooser(val mPlayerColor: PlayerColor) {
 
     val evaluationFunction = EvaluationFunction()
 
     /*
     * Alpha-Beta Search
     * */
-    fun chooseMove(board: Array<Array<Piece?>>, difficulty: Int, lastMove: Move?): Move {
-        var bestMove: Move? = null
+    fun chooseMove(board: Array<Array<Piece?>>, difficulty: Int, lastMove: com.malalisy.chessforfun.pojos.Move?): com.malalisy.chessforfun.pojos.Move {
+        var bestMove: com.malalisy.chessforfun.pojos.Move? = null
         var maxUtility = Double.NEGATIVE_INFINITY
 
-        for (move in SuccessorFunction().getAllAvailableMoves(board, mColor, lastMove)) {
+        for (move in SuccessorFunction().getAllAvailableMoves(board, mPlayerColor, lastMove)) {
             val cBoard = copyBoard(board)
             movePiece(cBoard, move) // New state after making the action
-            val moveUil = minValue(cBoard, mColor.opposite(), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, difficulty - 1, move)
+            val moveUil = minValue(cBoard, mPlayerColor.opposite(), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, difficulty - 1, move)
 
             if (moveUil > maxUtility) {
                 bestMove = move
@@ -35,17 +35,17 @@ class MoveChooser(val mColor: Color) {
         return bestMove!!
     }
 
-    private fun maxValue(board: Array<Array<Piece?>>, color: Color, alpha: Double, beta: Double, depth: Int, lastMove: Move?): Double {
-        if (teminalTest(board, depth, mColor, lastMove)) {
-            return evaluationFunction.evaluate(board, mColor, lastMove).toDouble()
+    private fun maxValue(board: Array<Array<Piece?>>, playerColor: PlayerColor, alpha: Double, beta: Double, depth: Int, lastMove: com.malalisy.chessforfun.pojos.Move?): Double {
+        if (teminalTest(board, depth, mPlayerColor, lastMove)) {
+            return evaluationFunction.evaluate(board, mPlayerColor, lastMove).toDouble()
         }
         var v = Double.NEGATIVE_INFINITY
         var a = alpha
 
-        for (move in SuccessorFunction().getAllAvailableMoves(board, color, lastMove)) {
+        for (move in SuccessorFunction().getAllAvailableMoves(board, playerColor, lastMove)) {
             val cBoard = copyBoard(board)
             movePiece(cBoard, move) // New state after making the action
-            v = max(v, minValue(cBoard, color.opposite(), a, beta, depth - 1, move))
+            v = max(v, minValue(cBoard, playerColor.opposite(), a, beta, depth - 1, move))
             a = max(a, v)
             if (a >= beta)
                 break
@@ -53,17 +53,17 @@ class MoveChooser(val mColor: Color) {
         return v
     }
 
-    private fun minValue(board: Array<Array<Piece?>>, color: Color, alpha: Double, beta: Double, depth: Int, lastMove: Move?): Double {
-        if (teminalTest(board, depth, mColor, lastMove)) {
-            return evaluationFunction.evaluate(board, mColor, lastMove).toDouble()
+    private fun minValue(board: Array<Array<Piece?>>, playerColor: PlayerColor, alpha: Double, beta: Double, depth: Int, lastMove: com.malalisy.chessforfun.pojos.Move?): Double {
+        if (teminalTest(board, depth, mPlayerColor, lastMove)) {
+            return evaluationFunction.evaluate(board, mPlayerColor, lastMove).toDouble()
         }
         var v = Double.POSITIVE_INFINITY
         var b = beta
 
-        for (move in SuccessorFunction().getAllAvailableMoves(board, color, lastMove)) {
+        for (move in SuccessorFunction().getAllAvailableMoves(board, playerColor, lastMove)) {
             val cBoard = copyBoard(board)
             movePiece(cBoard, move) // New state after making the action
-            v = min(v, maxValue(cBoard, color.opposite(), alpha, beta, depth - 1, move))
+            v = min(v, maxValue(cBoard, playerColor.opposite(), alpha, beta, depth - 1, move))
             b = min(b, v)
             if (alpha >= b)
                 break
@@ -72,10 +72,10 @@ class MoveChooser(val mColor: Color) {
     }
 
 
-    private fun teminalTest(board: Array<Array<Piece?>>, depth: Int, color: Color, lastMove: Move?): Boolean {
+    private fun teminalTest(board: Array<Array<Piece?>>, depth: Int, playerColor: PlayerColor, lastMove: com.malalisy.chessforfun.pojos.Move?): Boolean {
         /*
-        * TODO: CHECK FOR DRAW (NO VALID MOVES OR INSUFFICIENT MATERIALS)
+        * TODO: CHECK FOR DRAW (Stalemate OR INSUFFICIENT MATERIALS)
         * */
-        return depth == 0 || isCheckMate(board, color, lastMove) || isCheckMate(board, color.opposite(), lastMove)
+        return depth == 0 || isCheckMate(board, playerColor, lastMove) || isCheckMate(board, playerColor.opposite(), lastMove)
     }
 }

@@ -1,12 +1,12 @@
 package com.malalisy.chessforfun.utils
 
-import com.malalisy.chessforfun.Color
-import com.malalisy.chessforfun.Move
-import com.malalisy.chessforfun.Point
-import com.malalisy.chessforfun.pieces.*
+import com.malalisy.chessforfun.pojos.PlayerColor
+import com.malalisy.chessforfun.pojos.Move
+import com.malalisy.chessforfun.pojos.Point
+import com.malalisy.chessforfun.pojos.pieces.*
 import kotlin.math.abs
 
-fun isLegalMove(board: Array<Array<Piece?>>, m: Move, lastMove: Move?): Boolean {
+fun isLegalMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move, lastMove: com.malalisy.chessforfun.pojos.Move?): Boolean {
     val piece = m.piece
     if (!basicValidation(board, m))
         return false
@@ -22,14 +22,14 @@ fun isLegalMove(board: Array<Array<Piece?>>, m: Move, lastMove: Move?): Boolean 
     return false
 }
 
-fun willResultInCheck(board: Array<Array<Piece?>>, move: Move): Boolean {
+fun willResultInCheck(board: Array<Array<Piece?>>, move: com.malalisy.chessforfun.pojos.Move): Boolean {
     val nBoard = copyBoard(board)
     nBoard[move.to.y][move.to.x] = board[move.from.y][move.from.x]
     nBoard[move.from.y][move.from.x] = null
-    return isKingInCheck(nBoard, move.piece.color)
+    return isKingInCheck(nBoard, move.piece.playerColor)
 }
 
-private fun validateKingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
+private fun validateKingMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move): Boolean {
     val temp = abs(m.from.x - m.to.x)
     val temp2 = abs(m.from.y - m.to.y)
 
@@ -50,7 +50,7 @@ private fun validateKingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
     }
 }
 
-private fun validateDiagonalMove(board: Array<Array<Piece?>>, m: Move): Boolean {
+private fun validateDiagonalMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move): Boolean {
     if (abs(m.to.y - m.from.y) != abs(m.to.x - m.from.x))
     // Not a diagonal move
         return false
@@ -68,7 +68,7 @@ private fun validateDiagonalMove(board: Array<Array<Piece?>>, m: Move): Boolean 
 
 }
 
-private fun validateHorizontalVerticalMove(board: Array<Array<Piece?>>, m: Move): Boolean {
+private fun validateHorizontalVerticalMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move): Boolean {
     if (!(m.from.x == m.to.x || m.from.y == m.to.y))
     // Not horizontal or vertical move
         return false
@@ -83,31 +83,31 @@ private fun validateHorizontalVerticalMove(board: Array<Array<Piece?>>, m: Move)
     return true
 }
 
-private fun validateKnightMove(board: Array<Array<Piece?>>, m: Move): Boolean {
+private fun validateKnightMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move): Boolean {
     return abs(m.to.x - m.from.x) == 2 && abs(m.to.y - m.from.y) == 1
             || abs(m.to.x - m.from.x) == 1 && abs(m.to.y - m.from.y) == 2
 }
 
-private fun basicValidation(board: Array<Array<Piece?>>, move: Move): Boolean {
+private fun basicValidation(board: Array<Array<Piece?>>, move: com.malalisy.chessforfun.pojos.Move): Boolean {
     if (move.from == move.to)
         return false
     if (!validPosition(move.from.x, move.from.y) || !validPosition(move.to.x, move.to.y))
         return false
-    if (board[move.to.y][move.to.x] != null && move.piece.color == board[move.to.y][move.to.x]?.color)
+    if (board[move.to.y][move.to.x] != null && move.piece.playerColor == board[move.to.y][move.to.x]?.playerColor)
         return false
     return !willResultInCheck(board, move)
 }
 
-private fun validatePawnMove(board: Array<Array<Piece?>>, m: Move, lastMove: Move?): Boolean {
+private fun validatePawnMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move, lastMove: com.malalisy.chessforfun.pojos.Move?): Boolean {
     val piece = m.piece as Pawn
-    if (piece.color == Color.WHITE) {
+    if (piece.playerColor == PlayerColor.WHITE) {
 
         // Basic one step or tow steps forward move
         if (m.to.y == m.from.y + 1 || piece.isFirstMove(m.from.y) && m.to.y == m.from.y + 2 && board[m.to.y][m.to.x] == null)
             return true
         // Capturing
         if (m.to.y == m.from.y + 1 && (m.to.x == m.from.x + 1 || m.to.x == m.from.x - 1))
-            if (board[m.to.y][m.to.x] != null && board[m.to.y][m.to.x]?.color != Color.WHITE)
+            if (board[m.to.y][m.to.x] != null && board[m.to.y][m.to.x]?.playerColor != PlayerColor.WHITE)
                 return true
         // En passant
         if (
@@ -135,7 +135,7 @@ private fun validatePawnMove(board: Array<Array<Piece?>>, m: Move, lastMove: Mov
             return true
         // Capturing
         if (m.to.y == m.from.y - 1 && (m.to.x == m.from.x + 1 || m.to.x == m.from.x - 1))
-            return board[m.to.y][m.to.x] != null && board[m.to.y][m.to.x]?.color != Color.WHITE
+            return board[m.to.y][m.to.x] != null && board[m.to.y][m.to.x]?.playerColor != PlayerColor.WHITE
         // En passant
 
         if (
@@ -162,13 +162,13 @@ private fun validatePawnMove(board: Array<Array<Piece?>>, m: Move, lastMove: Mov
 }
 
 
-fun isValidCastlingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
+fun isValidCastlingMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move): Boolean {
     // Castling is not allowed if the king is under threat
-    if (isKingInCheck(board, m.piece.color)) {
+    if (isKingInCheck(board, m.piece.playerColor)) {
         return false
     }
 
-    if (m.piece.color == Color.WHITE) {
+    if (m.piece.playerColor == PlayerColor.WHITE) {
         if (m.to.x == 6 && m.to.y == 0) {
             // Castling with the right rook
 
@@ -182,11 +182,11 @@ fun isValidCastlingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
              */
             var cBoard = copyBoard(board)
             movePiece(cBoard, m.from, Point(6, 0))
-            if (isKingInCheck(cBoard, m.piece.color))
+            if (isKingInCheck(cBoard, m.piece.playerColor))
                 return false
             cBoard = copyBoard(board)
             movePiece(cBoard, m.from, Point(5, 0))
-            if (isKingInCheck(cBoard, m.piece.color))
+            if (isKingInCheck(cBoard, m.piece.playerColor))
                 return false
 
             // Check if the right rook also has not moved
@@ -203,11 +203,11 @@ fun isValidCastlingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
              */
             var cBoard = copyBoard(board)
             movePiece(cBoard, m.from, Point(2, 0))
-            if (isKingInCheck(cBoard, m.piece.color))
+            if (isKingInCheck(cBoard, m.piece.playerColor))
                 return false
             cBoard = copyBoard(board)
             movePiece(cBoard, m.from, Point(3, 0))
-            if (isKingInCheck(cBoard, m.piece.color))
+            if (isKingInCheck(cBoard, m.piece.playerColor))
                 return false
 
 
@@ -231,11 +231,11 @@ fun isValidCastlingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
              */
             var cBoard = copyBoard(board)
             movePiece(cBoard, m.from, Point(6, 7))
-            if (isKingInCheck(cBoard, m.piece.color))
+            if (isKingInCheck(cBoard, m.piece.playerColor))
                 return false
             cBoard = copyBoard(board)
             movePiece(cBoard, m.from, Point(5, 7))
-            if (isKingInCheck(cBoard, m.piece.color))
+            if (isKingInCheck(cBoard, m.piece.playerColor))
                 return false
             // Check if the right rook also has not moved
             return board[7][7] != null && board[7][7] is Rook && (board[7][7] as Rook).isFirstMove
@@ -251,11 +251,11 @@ fun isValidCastlingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
              */
             var cBoard = copyBoard(board)
             movePiece(cBoard, m.from, Point(2, 7))
-            if (isKingInCheck(cBoard, Color.BLACK))
+            if (isKingInCheck(cBoard, PlayerColor.BLACK))
                 return false
             cBoard = copyBoard(board)
             movePiece(cBoard, m.from, Point(3, 7))
-            if (isKingInCheck(cBoard, Color.BLACK))
+            if (isKingInCheck(cBoard, PlayerColor.BLACK))
                 return false
 
 

@@ -1,10 +1,10 @@
-package com.malalisy.chessforfun
+package com.malalisy.chessforfun.pojos
 
-enum class Color {
+enum class PlayerColor {
     WHITE, BLACK;
 
 
-    fun opposite(): Color {
+    fun opposite(): PlayerColor {
         if (this == BLACK)
             return WHITE
         else

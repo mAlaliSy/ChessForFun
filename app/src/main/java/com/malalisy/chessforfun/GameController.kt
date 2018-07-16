@@ -1,18 +1,20 @@
 package com.malalisy.chessforfun
 
-import com.malalisy.chessforfun.pieces.*
+import com.malalisy.chessforfun.pojos.pieces.*
 import com.malalisy.chessforfun.utils.isLegalMove
 import com.malalisy.chessforfun.utils.movePiece
+import com.malalisy.chessforfun.pojos.Point
+import com.malalisy.chessforfun.pojos.PlayerColor
 import kotlin.math.abs
 
-class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
+class GameController(var board: Array<Array<Piece?>>, var lastMove: com.malalisy.chessforfun.pojos.Move?) {
 
-    fun move(p1: Point, p2: Point): Move? {
+    fun move(p1: Point, p2: Point): com.malalisy.chessforfun.pojos.Move? {
         if (board[p1.y][p1.x] == null) {
             return null
         }
 
-        val move = Move(p1, p2, board[p1.y][p1.x]!!)
+        val move = com.malalisy.chessforfun.pojos.Move(p1, p2, board[p1.y][p1.x]!!)
 
         if (isLegalMove(board, move, lastMove)) {
             return null
@@ -35,7 +37,7 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
         return move
     }
 
-    private fun processKingMove(m: Move) {
+    private fun processKingMove(m: com.malalisy.chessforfun.pojos.Move) {
         val temp = abs(m.from.x - m.to.x)
         val temp2 = abs(m.from.y - m.to.y)
 
@@ -46,7 +48,7 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
             movePiece(board, m.from, m.to)
 
             // Move The Rook
-            if (m.piece.color == Color.WHITE) {
+            if (m.piece.playerColor == PlayerColor.WHITE) {
                 if (m.to.x == 6 && m.to.y == 0) {
                     // Castling with the right rook
                     movePiece(board, Point(7, 0), Point(5, 0))
@@ -67,7 +69,7 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
         }
     }
 
-    private fun processPawnMove(move: Move) {
+    private fun processPawnMove(move: com.malalisy.chessforfun.pojos.Move) {
         val piece = move.piece
 
         if (move.from.x == move.to.x || board[move.to.y][move.to.x] != null) {
@@ -81,7 +83,7 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
             /* TODO Return the captured piece */
 
             // Capture the opponent piece
-            if (piece.color == Color.WHITE) {
+            if (piece.playerColor == PlayerColor.WHITE) {
                 board[move.to.y - 1][move.to.x] = null
             } else {
                 board[move.to.y + 1][move.to.x] = null
@@ -97,7 +99,7 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: Move?) {
     }
 
 
-    private fun processNormalMove(move: Move) {
+    private fun processNormalMove(move: com.malalisy.chessforfun.pojos.Move) {
         if (board[move.to.y][move.to.x] != null) {
             /* TODO Return the captured piece! */
         }
