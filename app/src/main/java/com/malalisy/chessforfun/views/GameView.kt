@@ -18,6 +18,10 @@ class GameView : SurfaceView {
 
     var board: Array<Array<Piece?>>? = null
     var playerPlayerColor: com.malalisy.chessforfun.pojos.PlayerColor? = null
+        set (value) {
+            field = value
+            boardView.playerColor = value
+        }
 
     lateinit var boardView: BoardView
 
@@ -45,6 +49,7 @@ class GameView : SurfaceView {
         init(DEFAULT_LIGHT_COLOR, DEFAULT_DARK_COLOR)
         this.board = board
         this.playerPlayerColor = playerColor
+        boardView.playerColor = playerColor
     }
 
     constructor(context: Context, attributes: AttributeSet) : super(context, attributes) {
@@ -59,22 +64,22 @@ class GameView : SurfaceView {
 
         var typeface = getIconTypeFace(context)
         blackPaint = Paint()
-        blackPaint.color = Color.BLACK
+        blackPaint.color = Color.parseColor("#393939")
         blackPaint.textSize = FONT_SIZE
-        blackPaint.isAntiAlias = true;
-        blackPaint.isSubpixelText = true;
-        blackPaint.typeface = typeface;
-        blackPaint.style = Paint.Style.FILL;
+        blackPaint.isAntiAlias = true
+        blackPaint.isSubpixelText = true
+        blackPaint.typeface = typeface
+        blackPaint.style = Paint.Style.FILL
 
 
         whitePaint = Paint()
         whitePaint.typeface = getIconTypeFace(context)
-        whitePaint.color = Color.WHITE
+        whitePaint.color = Color.parseColor("#fcfcfc")
         whitePaint.textSize = FONT_SIZE
-        whitePaint.isAntiAlias = true;
-        whitePaint.isSubpixelText = true;
-        whitePaint.typeface = typeface;
-        whitePaint.style = Paint.Style.FILL;
+        whitePaint.isAntiAlias = true
+        whitePaint.isSubpixelText = true
+        whitePaint.typeface = typeface
+        whitePaint.style = Paint.Style.FILL
 
 
 
@@ -156,7 +161,7 @@ class GameView : SurfaceView {
 
 
     private fun drawCenter(canvas: Canvas, top: Float, left: Float, paint: Paint, text: String) {
-        paint.textAlign = Paint.Align.LEFT;
+        paint.textAlign = Paint.Align.LEFT
         paint.getTextBounds(text, 0, text.length, rect)
         val x = left - rect.width() / 2f - rect.left
         val y = top + rect.height() / 2f - rect.bottom

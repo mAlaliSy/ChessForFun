@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import com.malalisy.chessforfun.R
+import com.malalisy.chessforfun.pojos.PlayerColor
 import com.malalisy.chessforfun.views.GameView.Companion.DEFAULT_DARK_COLOR
 import com.malalisy.chessforfun.views.GameView.Companion.DEFAULT_LIGHT_COLOR
 import kotlin.math.log
@@ -43,6 +44,7 @@ class BoardView : View {
     private lateinit var lightPaint: Paint
     private lateinit var darkPaint: Paint
     private lateinit var blockRect: Rect
+    var playerColor: PlayerColor? = null
 
     constructor(context: Context) : super(context) {
         init()
@@ -88,7 +90,8 @@ class BoardView : View {
         canvas.drawRect(blockRect, lightPaint)
 
 
-        var shift = 0
+        var shift = if (playerColor == PlayerColor.WHITE) 1 else 0
+
         for (y in 0..7) {
             for (x in 0..7 step 2) {
                 blockRect.set((x + shift) * blockSize, y * blockSize, (x + 1 + shift) * blockSize, (y + 1) * blockSize)
