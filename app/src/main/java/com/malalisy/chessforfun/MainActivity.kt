@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        gameView.playerPlayerColor = PlayerColor.WHITE
+        gameView.playerPlayerColor = PlayerColor.BLACK
         gameView.board = getInitialBoard()
 
         gameView.setBoardDarkColor(Color.parseColor("#2d9fbf"))

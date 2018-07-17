@@ -10,7 +10,9 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import com.malalisy.chessforfun.R
 import com.malalisy.chessforfun.pojos.pieces.*
+import com.malalisy.chessforfun.utils.drawCenter
 import com.malalisy.chessforfun.utils.getIconTypeFace
+import com.malalisy.chessforfun.utils.getPixelsFromDP
 import kotlin.math.min
 
 class GameView : SurfaceView {
@@ -38,7 +40,7 @@ class GameView : SurfaceView {
 
     lateinit var rect: Rect
 
-    private val FONT_SIZE: Float = 90f
+    private val FONT_SIZE: Float = getPixelsFromDP(42f).toFloat()
 
     companion object {
         val DEFAULT_LIGHT_COLOR = Color.parseColor("#d9ddc1")
@@ -128,7 +130,7 @@ class GameView : SurfaceView {
 
                 val piece = if (playerPlayerColor == com.malalisy.chessforfun.pojos.PlayerColor.WHITE) {
                     board!![7 - y][x]
-                } else board!![y][x]
+                } else board!![y][7 - x]
 
                 if (piece == null)
                     continue
@@ -157,15 +159,6 @@ class GameView : SurfaceView {
         }
 
 
-    }
-
-
-    private fun drawCenter(canvas: Canvas, top: Float, left: Float, paint: Paint, text: String) {
-        paint.textAlign = Paint.Align.LEFT
-        paint.getTextBounds(text, 0, text.length, rect)
-        val x = left - rect.width() / 2f - rect.left
-        val y = top + rect.height() / 2f - rect.bottom
-        canvas.drawText(text, x, y, paint)
     }
 
 
