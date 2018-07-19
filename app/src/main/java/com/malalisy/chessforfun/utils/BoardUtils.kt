@@ -1,7 +1,6 @@
 package com.malalisy.chessforfun.utils
 
 import com.malalisy.chessforfun.pojos.PlayerColor
-import com.malalisy.chessforfun.pojos.Move
 import com.malalisy.chessforfun.pojos.Point
 import com.malalisy.chessforfun.pojos.pieces.*
 import kotlin.math.abs

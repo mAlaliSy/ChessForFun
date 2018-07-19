@@ -1,15 +1,18 @@
 package com.malalisy.chessforfun.utils
 
-import com.malalisy.chessforfun.pojos.PlayerColor
+import android.util.Log
 import com.malalisy.chessforfun.pojos.Move
+import com.malalisy.chessforfun.pojos.PlayerColor
 import com.malalisy.chessforfun.pojos.Point
 import com.malalisy.chessforfun.pojos.pieces.*
 import kotlin.math.abs
 
-fun isLegalMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move, lastMove: com.malalisy.chessforfun.pojos.Move?): Boolean {
+fun isLegalMove(board: Array<Array<Piece?>>, m: Move, lastMove: Move?): Boolean {
+
     val piece = m.piece
-    if (!basicValidation(board, m))
+    if (!basicValidation(board, m)) {
         return false
+    }
     when (piece) {
         is Pawn -> return validatePawnMove(board, m, lastMove)
         is Knight -> return validateKnightMove(board, m)
@@ -22,14 +25,14 @@ fun isLegalMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.M
     return false
 }
 
-fun willResultInCheck(board: Array<Array<Piece?>>, move: com.malalisy.chessforfun.pojos.Move): Boolean {
+fun willResultInCheck(board: Array<Array<Piece?>>, move: Move): Boolean {
     val nBoard = copyBoard(board)
     nBoard[move.to.y][move.to.x] = board[move.from.y][move.from.x]
     nBoard[move.from.y][move.from.x] = null
     return isKingInCheck(nBoard, move.piece.playerColor)
 }
 
-private fun validateKingMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move): Boolean {
+private fun validateKingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
     val temp = abs(m.from.x - m.to.x)
     val temp2 = abs(m.from.y - m.to.y)
 
@@ -50,7 +53,7 @@ private fun validateKingMove(board: Array<Array<Piece?>>, m: com.malalisy.chessf
     }
 }
 
-private fun validateDiagonalMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move): Boolean {
+private fun validateDiagonalMove(board: Array<Array<Piece?>>, m: Move): Boolean {
     if (abs(m.to.y - m.from.y) != abs(m.to.x - m.from.x))
     // Not a diagonal move
         return false
@@ -68,7 +71,7 @@ private fun validateDiagonalMove(board: Array<Array<Piece?>>, m: com.malalisy.ch
 
 }
 
-private fun validateHorizontalVerticalMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move): Boolean {
+private fun validateHorizontalVerticalMove(board: Array<Array<Piece?>>, m: Move): Boolean {
     if (!(m.from.x == m.to.x || m.from.y == m.to.y))
     // Not horizontal or vertical move
         return false
@@ -83,12 +86,12 @@ private fun validateHorizontalVerticalMove(board: Array<Array<Piece?>>, m: com.m
     return true
 }
 
-private fun validateKnightMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move): Boolean {
+private fun validateKnightMove(board: Array<Array<Piece?>>, m: Move): Boolean {
     return abs(m.to.x - m.from.x) == 2 && abs(m.to.y - m.from.y) == 1
             || abs(m.to.x - m.from.x) == 1 && abs(m.to.y - m.from.y) == 2
 }
 
-private fun basicValidation(board: Array<Array<Piece?>>, move: com.malalisy.chessforfun.pojos.Move): Boolean {
+private fun basicValidation(board: Array<Array<Piece?>>, move: Move): Boolean {
     if (move.from == move.to)
         return false
     if (!validPosition(move.from.x, move.from.y) || !validPosition(move.to.x, move.to.y))
@@ -98,17 +101,18 @@ private fun basicValidation(board: Array<Array<Piece?>>, move: com.malalisy.ches
     return !willResultInCheck(board, move)
 }
 
-private fun validatePawnMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move, lastMove: com.malalisy.chessforfun.pojos.Move?): Boolean {
+private fun validatePawnMove(board: Array<Array<Piece?>>, m: Move, lastMove: Move?): Boolean {
     val piece = m.piece as Pawn
     if (piece.playerColor == PlayerColor.WHITE) {
-
         // Basic one step or tow steps forward move
-        if (m.to.y == m.from.y + 1 || piece.isFirstMove(m.from.y) && m.to.y == m.from.y + 2 && board[m.to.y][m.to.x] == null)
+        if (m.to.x == m.from.x && (m.to.y == m.from.y + 1 || piece.isFirstMove(m.from.y) && m.to.y == m.from.y + 2) && board[m.to.y][m.to.x] == null) {
             return true
+        }
         // Capturing
         if (m.to.y == m.from.y + 1 && (m.to.x == m.from.x + 1 || m.to.x == m.from.x - 1))
-            if (board[m.to.y][m.to.x] != null && board[m.to.y][m.to.x]?.playerColor != PlayerColor.WHITE)
+            if (board[m.to.y][m.to.x] != null && board[m.to.y][m.to.x]?.playerColor != PlayerColor.WHITE) {
                 return true
+            }
         // En passant
         if (
         /*
@@ -131,7 +135,7 @@ private fun validatePawnMove(board: Array<Array<Piece?>>, m: com.malalisy.chessf
     } else {
 
         // Basic one step or tow steps forward move
-        if (m.to.y == m.from.y - 1 || piece.isFirstMove(m.from.y) && m.to.y == m.from.y - 2 && board[m.to.y][m.to.x] == null)
+        if (m.from.x == m.to.x && (m.to.y == m.from.y - 1 || piece.isFirstMove(m.from.y) && m.to.y == m.from.y - 2) && board[m.to.y][m.to.x] == null)
             return true
         // Capturing
         if (m.to.y == m.from.y - 1 && (m.to.x == m.from.x + 1 || m.to.x == m.from.x - 1))
@@ -162,7 +166,7 @@ private fun validatePawnMove(board: Array<Array<Piece?>>, m: com.malalisy.chessf
 }
 
 
-fun isValidCastlingMove(board: Array<Array<Piece?>>, m: com.malalisy.chessforfun.pojos.Move): Boolean {
+fun isValidCastlingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
     // Castling is not allowed if the king is under threat
     if (isKingInCheck(board, m.piece.playerColor)) {
         return false

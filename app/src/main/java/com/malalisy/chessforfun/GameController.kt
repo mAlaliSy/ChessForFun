@@ -1,26 +1,39 @@
 package com.malalisy.chessforfun
 
-import com.malalisy.chessforfun.pojos.pieces.*
+import android.util.Log
+import com.malalisy.chessforfun.chess_engine.MoveChooser
+import com.malalisy.chessforfun.chess_engine.MovesGenerator
+import com.malalisy.chessforfun.pojos.Move
+import com.malalisy.chessforfun.pojos.PlayerColor
+import com.malalisy.chessforfun.pojos.Point
+import com.malalisy.chessforfun.pojos.pieces.King
+import com.malalisy.chessforfun.pojos.pieces.Pawn
+import com.malalisy.chessforfun.pojos.pieces.Piece
+import com.malalisy.chessforfun.utils.isCheckMate
 import com.malalisy.chessforfun.utils.isLegalMove
 import com.malalisy.chessforfun.utils.movePiece
-import com.malalisy.chessforfun.pojos.Point
-import com.malalisy.chessforfun.pojos.PlayerColor
 import kotlin.math.abs
 
-class GameController(var board: Array<Array<Piece?>>, var lastMove: com.malalisy.chessforfun.pojos.Move?) {
+class GameController(var board: Array<Array<Piece?>>, var lastMove: com.malalisy.chessforfun.pojos.Move?, val playerColor: PlayerColor, val difficulty: Int, var gameEndCallback: GameEndCallback, var moveCallback: MoveCallback) {
 
-    fun move(p1: Point, p2: Point): com.malalisy.chessforfun.pojos.Move? {
-        if (board[p1.y][p1.x] == null) {
+    val moveChooser: MoveChooser
+
+    init {
+        moveChooser = MoveChooser(playerColor.opposite())
+    }
+
+    fun move(from: Point, to: Point): Move? {
+        if (board[from.y][from.x] == null) {
             return null
         }
 
-        val move = com.malalisy.chessforfun.pojos.Move(p1, p2, board[p1.y][p1.x]!!)
+        val move = Move(from, to, board[from.y][from.x]!!)
 
-        if (isLegalMove(board, move, lastMove)) {
+        if (!isLegalMove(board, move, lastMove)) {
             return null
         }
 
-        when (board[p1.y][p1.x]) {
+        when (board[from.y][from.x]) {
 
             is Pawn -> {
                 processPawnMove(move)
@@ -34,8 +47,27 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: com.malalisy
         }
 
         lastMove = move
+        /*
+        * TODO: Check if it is draw
+        * */
+        if (isCheckMate(board, playerColor.opposite(), lastMove)) {
+            gameEndCallback.onWin(playerColor)
+        } else {
+            Thread(Runnable {
+                val chosenMove = moveChooser.chooseMove(board, difficulty, move)
+                movePiece(board, chosenMove)
+                lastMove = chosenMove
+
+                if (isCheckMate(board, playerColor, lastMove))
+                    gameEndCallback.onWin(playerColor.opposite())
+                moveCallback.onMoveMade(chosenMove)
+
+            }).start()
+        }
+
         return move
     }
+
 
     private fun processKingMove(m: com.malalisy.chessforfun.pojos.Move) {
         val temp = abs(m.from.x - m.to.x)
@@ -105,4 +137,27 @@ class GameController(var board: Array<Array<Piece?>>, var lastMove: com.malalisy
         }
         movePiece(board, move.from, move.to)
     }
+
+    fun getAvailableMoves(point: Point): List<Point> {
+        val moves = MovesGenerator.getAvailableMoves(board, point, lastMove)
+        val points = ArrayList<Point>(moves.size)
+        moves.forEach { points.add(it.to) }
+        return points
+    }
+
+
+    interface GameEndCallback {
+        fun onWin(winnerColor: PlayerColor)
+        fun onDraw(drawCause: DrawCause)
+    }
+
+    enum class DrawCause {
+        NO_SUFFICIENT_MATERIALS,
+        STALEMATE
+    }
+
+    interface MoveCallback {
+        fun onMoveMade(move: Move)
+    }
+
 }

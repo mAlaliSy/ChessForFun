@@ -1,11 +1,11 @@
 package com.malalisy.chessforfun.chess_engine
 
-import com.malalisy.chessforfun.pojos.PlayerColor
 import com.malalisy.chessforfun.chess_engine.evaluation_functions.CenterControlEvaluation
 import com.malalisy.chessforfun.chess_engine.evaluation_functions.DoubledPawnsEvaluation
 import com.malalisy.chessforfun.chess_engine.evaluation_functions.EvaluationFeature
 import com.malalisy.chessforfun.chess_engine.evaluation_functions.MaterialEvaluation
-import com.malalisy.chessforfun.pojos.pieces.*
+import com.malalisy.chessforfun.pojos.PlayerColor
+import com.malalisy.chessforfun.pojos.pieces.Piece
 import com.malalisy.chessforfun.utils.isCheckMate
 
 class EvaluationFunction {

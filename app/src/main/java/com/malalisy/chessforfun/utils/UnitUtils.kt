@@ -2,7 +2,6 @@ package com.malalisy.chessforfun.utils
 
 import android.content.res.Resources
 import android.util.TypedValue
-import android.util.DisplayMetrics
 
 
 fun getPixels(unit: Int, size: Float): Int {

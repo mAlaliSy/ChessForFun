@@ -1,7 +1,6 @@
 package com.malalisy.chessforfun.chess_engine
 
 import com.malalisy.chessforfun.pojos.PlayerColor
-import com.malalisy.chessforfun.pojos.Move
 import com.malalisy.chessforfun.pojos.pieces.Piece
 import com.malalisy.chessforfun.utils.copyBoard
 import com.malalisy.chessforfun.utils.isCheckMate
@@ -20,7 +19,7 @@ class MoveChooser(val mPlayerColor: PlayerColor) {
         var bestMove: com.malalisy.chessforfun.pojos.Move? = null
         var maxUtility = Double.NEGATIVE_INFINITY
 
-        for (move in SuccessorFunction().getAllAvailableMoves(board, mPlayerColor, lastMove)) {
+        for (move in MovesGenerator.getAllAvailableMoves(board, mPlayerColor, lastMove)) {
             val cBoard = copyBoard(board)
             movePiece(cBoard, move) // New state after making the action
             val moveUil = minValue(cBoard, mPlayerColor.opposite(), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, difficulty - 1, move)
@@ -42,7 +41,7 @@ class MoveChooser(val mPlayerColor: PlayerColor) {
         var v = Double.NEGATIVE_INFINITY
         var a = alpha
 
-        for (move in SuccessorFunction().getAllAvailableMoves(board, playerColor, lastMove)) {
+        for (move in MovesGenerator.getAllAvailableMoves(board, playerColor, lastMove)) {
             val cBoard = copyBoard(board)
             movePiece(cBoard, move) // New state after making the action
             v = max(v, minValue(cBoard, playerColor.opposite(), a, beta, depth - 1, move))
@@ -60,7 +59,7 @@ class MoveChooser(val mPlayerColor: PlayerColor) {
         var v = Double.POSITIVE_INFINITY
         var b = beta
 
-        for (move in SuccessorFunction().getAllAvailableMoves(board, playerColor, lastMove)) {
+        for (move in MovesGenerator.getAllAvailableMoves(board, playerColor, lastMove)) {
             val cBoard = copyBoard(board)
             movePiece(cBoard, move) // New state after making the action
             v = min(v, maxValue(cBoard, playerColor.opposite(), alpha, beta, depth - 1, move))

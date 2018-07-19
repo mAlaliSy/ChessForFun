@@ -6,20 +6,24 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
-import android.view.SurfaceHolder
-import android.view.SurfaceView
+import android.view.MotionEvent
+import android.view.View
 import com.malalisy.chessforfun.R
+import com.malalisy.chessforfun.pojos.Move
+import com.malalisy.chessforfun.pojos.PlayerColor
+import com.malalisy.chessforfun.pojos.Point
 import com.malalisy.chessforfun.pojos.pieces.*
+import com.malalisy.chessforfun.utils.convertPoint
 import com.malalisy.chessforfun.utils.drawCenter
 import com.malalisy.chessforfun.utils.getIconTypeFace
 import com.malalisy.chessforfun.utils.getPixelsFromDP
 import kotlin.math.min
 
-class GameView : SurfaceView {
+class GameView : View {
 
 
     var board: Array<Array<Piece?>>? = null
-    var playerPlayerColor: com.malalisy.chessforfun.pojos.PlayerColor? = null
+    var playerColor: PlayerColor? = null
         set (value) {
             field = value
             boardView.playerColor = value
@@ -40,7 +44,16 @@ class GameView : SurfaceView {
 
     lateinit var rect: Rect
 
-    private val FONT_SIZE: Float = getPixelsFromDP(42f).toFloat()
+    private val PIECE_FONT_SIZE: Float = getPixelsFromDP(42f).toFloat()
+
+    var boardListener: BoardListener? = null
+    var touchedPoint: Point? = null
+
+    var acceptMoves = true
+
+    var highlightedAvailableMoves = ArrayList<Point>()
+    private lateinit var movesHighlighterPaint: Paint
+
 
     companion object {
         val DEFAULT_LIGHT_COLOR = Color.parseColor("#d9ddc1")
@@ -50,7 +63,7 @@ class GameView : SurfaceView {
     constructor(context: Context, board: Array<Array<Piece?>>, playerColor: com.malalisy.chessforfun.pojos.PlayerColor) : super(context) {
         init(DEFAULT_LIGHT_COLOR, DEFAULT_DARK_COLOR)
         this.board = board
-        this.playerPlayerColor = playerColor
+        this.playerColor = playerColor
         boardView.playerColor = playerColor
     }
 
@@ -67,45 +80,29 @@ class GameView : SurfaceView {
         var typeface = getIconTypeFace(context)
         blackPaint = Paint()
         blackPaint.color = Color.parseColor("#393939")
-        blackPaint.textSize = FONT_SIZE
+        blackPaint.textSize = PIECE_FONT_SIZE
         blackPaint.isAntiAlias = true
         blackPaint.isSubpixelText = true
         blackPaint.typeface = typeface
         blackPaint.style = Paint.Style.FILL
 
-
         whitePaint = Paint()
         whitePaint.typeface = getIconTypeFace(context)
         whitePaint.color = Color.parseColor("#fcfcfc")
-        whitePaint.textSize = FONT_SIZE
+        whitePaint.textSize = PIECE_FONT_SIZE
         whitePaint.isAntiAlias = true
         whitePaint.isSubpixelText = true
         whitePaint.typeface = typeface
         whitePaint.style = Paint.Style.FILL
 
+        movesHighlighterPaint = Paint()
+        movesHighlighterPaint.color = Color.BLACK
+        movesHighlighterPaint.alpha = 90
 
 
         rect = Rect()
 
-
-        holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceChanged(p0: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
-
-            }
-
-            override fun surfaceDestroyed(p0: SurfaceHolder?) {}
-
-            override fun surfaceCreated(p0: SurfaceHolder?) {
-                val canvas = p0?.lockCanvas()
-                if (canvas != null) {
-                    draw(canvas)
-                    holder.unlockCanvasAndPost(canvas)
-                }
-            }
-
-        })
     }
-
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -121,14 +118,23 @@ class GameView : SurfaceView {
 
         boardView.draw(canvas)
 
-        if (board == null || playerPlayerColor == null)
+        if (board == null || playerColor == null)
             return
+
+        /*
+        * Highlight the avaliable moves
+        * */
+
+        for (hPoint in highlightedAvailableMoves) {
+            val point = convertPoint(hPoint, playerColor!!)
+            canvas.drawCircle((point.x + 0.5f) * blockSize, (point.y + 0.5f) * blockSize, blockSize / 5f, movesHighlighterPaint)
+        }
 
         var icon: String
         for (y in 0..7) {
             for (x in 0..7) {
 
-                val piece = if (playerPlayerColor == com.malalisy.chessforfun.pojos.PlayerColor.WHITE) {
+                val piece = if (playerColor == com.malalisy.chessforfun.pojos.PlayerColor.WHITE) {
                     board!![7 - y][x]
                 } else board!![y][7 - x]
 
@@ -157,8 +163,60 @@ class GameView : SurfaceView {
             }
 
         }
+    }
 
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (boardListener == null)
+            return true
 
+        when (event?.action) {
+            MotionEvent.ACTION_DOWN -> {
+
+                val point = getTouchedSquare(event.x.toInt(), event.y.toInt())
+                val selectedPiece = board!![point.y][point.x] ?: return true
+
+                if (selectedPiece.playerColor == playerColor) {
+                    touchedPoint = point
+                    boardView.highlightedSquares.clear()
+                    boardView.highlightedSquares.add(touchedPoint!!)
+
+                    if (acceptMoves) {
+                        highlightedAvailableMoves.clear()
+                        boardListener?.onSquareSelected(touchedPoint!!)
+                    }
+                }
+
+            }
+
+            MotionEvent.ACTION_UP -> {
+                if (acceptMoves) {
+                    var point = getTouchedSquare(event.x.toInt(), event.y.toInt())
+                    if (touchedPoint != null && point != touchedPoint) {
+
+                        /*
+                        * Check if the move is valid move
+                        * */
+                        if (boardListener!!.onMoveSelected(point)) {
+                            touchedPoint = null
+                            boardView.highlightedSquares.add(point)
+                            highlightedAvailableMoves.clear()
+                        }
+                    }
+                }
+            }
+
+        }
+        invalidate()
+
+        return true
+    }
+
+    fun getTouchedSquare(x: Int, y: Int): Point {
+        var newX = x / blockSize
+        var newY = y / blockSize
+        newX = if (playerColor == PlayerColor.WHITE) newX else 7 - newX
+        newY = if (playerColor == PlayerColor.WHITE) 7 - newY else newY
+        return Point(newX, newY)
     }
 
 
@@ -170,5 +228,24 @@ class GameView : SurfaceView {
         boardView.darkColor = color
     }
 
+
+    fun onOpponentPlayed(move: Move) {
+        acceptMoves = true
+        boardView.highlightedSquares.clear()
+        boardView.highlightedSquares.add(move.from)
+        boardView.highlightedSquares.add(move.to)
+        invalidate()
+    }
+
+    fun highlightAvailableMoves(points: List<Point>) {
+        highlightedAvailableMoves.addAll(points)
+    }
+
+    interface BoardListener {
+        fun onSquareSelected(point: Point)
+        fun onMoveSelected(to: Point): Boolean
+        fun onMoveCanceled()
+
+    }
 
 }

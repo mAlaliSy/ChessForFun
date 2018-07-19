@@ -3,16 +3,13 @@ package com.malalisy.chessforfun.views
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
-import com.malalisy.chessforfun.R
 import com.malalisy.chessforfun.pojos.PlayerColor
+import com.malalisy.chessforfun.pojos.Point
+import com.malalisy.chessforfun.utils.convertPoint
 import com.malalisy.chessforfun.utils.drawCenter
 import com.malalisy.chessforfun.utils.getPixelsFromDP
 import com.malalisy.chessforfun.utils.getPixelsFromSP
-import com.malalisy.chessforfun.views.GameView.Companion.DEFAULT_DARK_COLOR
-import com.malalisy.chessforfun.views.GameView.Companion.DEFAULT_LIGHT_COLOR
-import kotlin.math.log
 import kotlin.math.min
 
 class BoardView : View {
@@ -52,6 +49,11 @@ class BoardView : View {
     private lateinit var blockRect: Rect
     var playerColor: PlayerColor? = null
 
+
+    private lateinit var highlighterPaint: Paint
+    var highlightedSquares = ArrayList<Point>()
+
+
     constructor(context: Context) : super(context) {
         init()
     }
@@ -76,15 +78,12 @@ class BoardView : View {
         darkPaint.color = darkColor
 
         algebricPaint = Paint()
-        algebricPaint.color = Color.parseColor("#393939")
         algebricPaint.textSize = ALGERBRIC_FONT_SIZE.toFloat()
-        val rect = Rect()
-        algebricPaint.getTextBounds("a", 0, 1, rect)
         algebricPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
 
-
-
-
+        highlighterPaint = Paint()
+        highlighterPaint.color = Color.YELLOW
+        highlighterPaint.alpha = 100
 
         blockRect = Rect()
     }
@@ -119,6 +118,16 @@ class BoardView : View {
 
 
         /*
+        * Draw highlighted squares
+        * */
+
+        for (hPoint in highlightedSquares) {
+            val point = convertPoint(hPoint, playerColor!!)
+            blockRect.set(point.x * blockSize, point.y * blockSize, (point.x + 1) * blockSize, (point.y + 1) * blockSize)
+            canvas.drawRect(blockRect, highlighterPaint)
+        }
+
+        /*
         * Draw rows and columns names
         * */
         algebricPaint.color = if (playerColor == PlayerColor.WHITE) darkColor else lightColor
@@ -140,7 +149,7 @@ class BoardView : View {
             left++
         }
 
-    }
 
+    }
 
 }
