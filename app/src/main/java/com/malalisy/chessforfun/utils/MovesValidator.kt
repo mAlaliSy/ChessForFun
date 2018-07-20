@@ -41,7 +41,7 @@ private fun validateKingMove(board: Array<Array<Piece?>>, m: Move): Boolean {
     * Horizontal move : difference of x = 1
     * Diagonal move : difference of x = 1 and y = 1
     * */
-    if (temp == 1 || temp2 == 1)
+    if (temp <= 1 && temp2 <= 1)
         return true
 
     if (!(m.piece as King).isFirstMove) {

@@ -48,7 +48,7 @@ class MovesGenerator() {
 
             for (step in 0 until kingDirArray.size) {
                 val to = point + kingDirArray[step]
-                if (validPosition(to.x, to.y) && (board[to.y][to.y] == null || board[to.y][to.x]?.playerColor != piece.playerColor))
+                if (validPosition(to.x, to.y) && ((board[to.y][to.x] == null || board[to.y][to.x]?.playerColor != piece.playerColor)))
                     list.add(com.malalisy.chessforfun.pojos.Move(point, to, piece))
             }
 

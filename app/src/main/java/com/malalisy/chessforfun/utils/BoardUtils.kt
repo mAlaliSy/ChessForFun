@@ -1,5 +1,7 @@
 package com.malalisy.chessforfun.utils
 
+import com.malalisy.chessforfun.chess_engine.MovesGenerator
+import com.malalisy.chessforfun.pojos.Move
 import com.malalisy.chessforfun.pojos.PlayerColor
 import com.malalisy.chessforfun.pojos.Point
 import com.malalisy.chessforfun.pojos.pieces.*
@@ -8,13 +10,12 @@ import kotlin.math.abs
 fun validPosition(x: Int, y: Int) = x in 0..7 && y in 0..7
 
 fun copyBoard(board: Array<Array<Piece?>>): Array<Array<Piece?>> {
-    var cboard = Array<Array<Piece?>>(8, {
-        Array<Piece?>(8, { index ->
+    val cboard = Array<Array<Piece?>>(8, {
+        Array(8, { index ->
             board[it][index]
         })
     })
     return cboard
-
 }
 
 fun movePiece(board: Array<Array<Piece?>>, p1: Point, p2: Point) {
@@ -42,6 +43,11 @@ fun isKingInCheck(board: Array<Array<Piece?>>, playerColor: PlayerColor): Boolea
     val kingPosition = getKingPosition(board, playerColor)
     return getPieceCanMoveTo(board, kingPosition, playerColor.opposite(), null).isNotEmpty()
 }
+
+fun isDrawByStalemate(board: Array<Array<Piece?>>, color: PlayerColor, lastMove: Move?): Boolean {
+    return MovesGenerator.getAllAvailableMoves(board, color, lastMove).isEmpty()
+}
+
 
 fun isCheckMate(board: Array<Array<Piece?>>, playerColor: PlayerColor, lastMove: com.malalisy.chessforfun.pojos.Move?): Boolean {
     val kingPosition = getKingPosition(board, playerColor)
@@ -217,6 +223,14 @@ fun getPieceCanMoveTo(board: Array<Array<Piece?>>, point: Point, playerColor: Pl
             // There is a piece, check if it is bishop or queen
             if (nearestDiagonalPiece.second.playerColor == playerColor && (nearestDiagonalPiece.second is Bishop || nearestDiagonalPiece.second is Queen))
                 list.add(nearestDiagonalPiece)
+        }
+    }
+
+    val kingPosition = getKingPosition(board, playerColor.opposite())
+    for (dir in kingDirArray) {
+        if (kingPosition + dir == point) {
+            list.add(Pair(kingPosition, board[kingPosition.y][kingPosition.x]!!))
+            break
         }
     }
 

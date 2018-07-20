@@ -4,6 +4,7 @@ import com.malalisy.chessforfun.pojos.PlayerColor
 import com.malalisy.chessforfun.pojos.pieces.Piece
 import com.malalisy.chessforfun.utils.copyBoard
 import com.malalisy.chessforfun.utils.isCheckMate
+import com.malalisy.chessforfun.utils.isDrawByStalemate
 import com.malalisy.chessforfun.utils.movePiece
 import kotlin.math.max
 import kotlin.math.min
@@ -30,6 +31,7 @@ class MoveChooser(val mPlayerColor: PlayerColor) {
             }
 
         }
+
 
         return bestMove!!
     }
@@ -73,8 +75,8 @@ class MoveChooser(val mPlayerColor: PlayerColor) {
 
     private fun teminalTest(board: Array<Array<Piece?>>, depth: Int, playerColor: PlayerColor, lastMove: com.malalisy.chessforfun.pojos.Move?): Boolean {
         /*
-        * TODO: CHECK FOR DRAW (Stalemate OR INSUFFICIENT MATERIALS)
+        * TODO: CHECK FOR DRAW (INSUFFICIENT MATERIALS)
         * */
-        return depth == 0 || isCheckMate(board, playerColor, lastMove) || isCheckMate(board, playerColor.opposite(), lastMove)
+        return depth == 0 || isCheckMate(board, playerColor, lastMove) || isCheckMate(board, playerColor.opposite(), lastMove) || isDrawByStalemate(board, playerColor, lastMove)
     }
 }
